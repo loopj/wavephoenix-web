@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>WavePhoenix Web Firmware Updater</title>
+  <style>
+    html {
+      height: 100%;
+    }
+
+    body {
+      background: #121212;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url('images/background.gif');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      flex-grow: 1;
+    }
+
+    .header-bar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      z-index: 1000;
+    }
+
+    .card {
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 8px;
+      padding: 15px;
+      width: 450px;
+      margin: auto;
+    }
+
+    .card-header {
+      background: #333;
+      font-weight: bold;
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+
+    .status-text,
+    #instruction-text {
+      text-align: center;
+      margin: 30px 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #connect-btn,
+    #flash-btn,
+    #reboot-btn,
+    #try-again-btn {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    #connect-btn:hover,
+    #flash-btn:hover,
+    #reboot-btn:hover,
+    #try-again-btn:hover {
+      background-color: #66bb6a;
+    }
+
+    #select-file-btn {
+      background-color: #2196f3;
+      color: white;
+    }
+
+    #select-file-btn:hover {
+      background-color: #42a5f5;
+    }
+
+    #progress {
+      width: 100%;
+      background: #333;
+      margin-top: 20px;
+      height: 40px;
+      /* taller */
+      border-radius: 20px;
+      overflow: hidden;
+      display: none;
+      position: relative;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(to right, #4caf50, #66bb6a);
+      transition: width 0.3s ease;
+      border-radius: 20px 0 0 20px;
+    }
+
+    #progress-text {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      text-align: center;
+      line-height: 40px;
+      /* match height */
+      font-size: 18px;
+      color: white;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header-bar">
+    <img src="images/logo.svg" height="20" alt="WavePhoenix Logo">
+  </div>
+
+  <div class="card">
+    <div id="connection-status" class="card-header" style="color: #ff9800;">NOT CONNECTED</div>
+
+    <div id="instruction-text" class="status-text"></div>
+
+    <button id="connect-btn">Connect to Device</button>
+
+    <input type="file" id="firmware-file" accept=".gbl" style="display:none;">
+    <button id="select-file-btn" style="display:none;">Choose Firmware File</button>
+
+    <button id="flash-btn" style="display:none;">Flash Firmware</button>
+
+    <div id="progress">
+      <div id="progress-bar"></div>
+      <div id="progress-text"></div>
+    </div>
+
+    <button id="reboot-btn" style="display:none;">Reboot Device</button>
+    <button id="try-again-btn" style="display:none;">Try Again</button>
+  </div>
+
+  <script>
+    // Constants
+    const DEVICE_NAME = "WavePhoenix";
+    const OTA_SERVICE_UUID = "1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0";
+    const OTA_CONTROL_UUID = "f7bf3564-fb6d-4e53-88a4-5e37e0326063";
+    const OTA_DATA_UUID = "984227f3-34fc-4045-a5d0-2c581f81a153";
+    const APPLICATION_VERSION_UUID = "0d77cc11-4ac1-49f2-bfa9-cd96ac7a92f8";
+
+    const START_OTA = new Uint8Array([0x00]);
+    const FINISH_OTA = new Uint8Array([0x03]);
+    const CHUNK_SIZE = 64;
+
+    // Instruction messages
+    const initialInstructionText = `
+      Welcome to the WavePhoenix web firmware updater!<br><br>
+      Hold the pair button on your WavePhoenix for 3 seconds to enter bootloader mode.<br><br>
+      The LED will turn off to indicate bootloader mode is active.
+      Then click <i>Connect to Device</i> below.
+    `;
+
+    // DOM elements
+    const connectionStatus = document.getElementById('connection-status');
+    const instructionText = document.getElementById('instruction-text');
+    const connectBtn = document.getElementById('connect-btn');
+    const firmwareInput = document.getElementById('firmware-file');
+    const selectFileBtn = document.getElementById('select-file-btn');
+    const flashBtn = document.getElementById('flash-btn');
+    const rebootBtn = document.getElementById('reboot-btn');
+    const tryAgainBtn = document.getElementById('try-again-btn');
+    const progress = document.getElementById('progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    let device = null;
+    let server = null;
+    let controlChar = null;
+    let dataChar = null;
+    let firmwareFile = null;
+
+    // Set initial instructions at startup
+    instructionText.innerHTML = initialInstructionText;
+
+    connectBtn.addEventListener('click', async function () {
+      try {
+        device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: DEVICE_NAME }],
+          optionalServices: [OTA_SERVICE_UUID]
+        });
+      } catch (error) {
+        // User canceled device selection
+        return;
+      }
+
+      instructionText.textContent = "Connecting to device...";
+
+      try {
+        device.addEventListener('gattserverdisconnected', onDisconnected);
+
+        server = await device.gatt.connect();
+
+        const service = await server.getPrimaryService(OTA_SERVICE_UUID);
+        controlChar = await service.getCharacteristic(OTA_CONTROL_UUID);
+        dataChar = await service.getCharacteristic(OTA_DATA_UUID);
+
+        let appVersion = "(unknown)";
+        try {
+          const versionChar = await service.getCharacteristic(APPLICATION_VERSION_UUID);
+          const versionData = await versionChar.readValue();
+          appVersion = formatVersionData(versionData);
+        } catch (e) {
+          console.warn('Could not read firmware version:', e);
+        }
+
+        connectionStatus.textContent = "WAVEPHOENIX CONNECTED";
+        connectionStatus.style.color = "#4caf50";
+        instructionText.innerHTML = `Current firmware version: ${appVersion}.<br><br>Select a firmware file to continue.`;
+
+        connectBtn.style.display = "none";
+        selectFileBtn.style.display = "block";
+
+      } catch (error) {
+        console.error("Failed to connect:", error);
+        instructionText.textContent = "Connection failed. Please try again.";
+        connectBtn.style.display = "none";
+        tryAgainBtn.style.display = "block";
+      }
+    });
+
+    selectFileBtn.addEventListener('click', function () {
+      firmwareInput.click();
+    });
+
+    firmwareInput.addEventListener('change', function () {
+      if (firmwareInput.files.length > 0) {
+        firmwareFile = firmwareInput.files[0];
+        instructionText.innerHTML = "Firmware file ready.<br><br>Click <i>Flash Firmware</i> to continue.";
+        selectFileBtn.style.display = "none";
+        flashBtn.style.display = "block";
+      }
+    });
+
+    flashBtn.addEventListener('click', async function () {
+      if (!firmwareFile) return;
+
+      try {
+        instructionText.textContent = "Uploading firmware...";
+        flashBtn.style.display = "none";
+        progress.style.display = "block";
+
+        await controlChar.writeValue(START_OTA);
+        await delay(200);
+
+        const firmwareData = await firmwareFile.arrayBuffer();
+        const totalSize = firmwareData.byteLength;
+        let offset = 0;
+
+        while (offset < totalSize) {
+          const chunkEnd = Math.min(offset + CHUNK_SIZE, totalSize);
+          const chunk = firmwareData.slice(offset, chunkEnd);
+          await dataChar.writeValueWithoutResponse(chunk);
+          offset = chunkEnd;
+          updateProgress((offset / totalSize) * 100);
+          await delay(4);
+        }
+
+        await delay(500);
+        await controlChar.writeValue(FINISH_OTA);
+        await delay(500);
+
+        progress.style.display = "none"; /* 🔥 Hide progress after success */
+        instructionText.textContent = "Firmware upload successful! Click Reboot to finish.";
+        rebootBtn.style.display = "block";
+
+      } catch (error) {
+        console.error(error);
+        instructionText.textContent = "Upload failed. Please try again.";
+        tryAgainBtn.style.display = "block";
+      }
+    });
+
+    rebootBtn.addEventListener('click', function () {
+      if (device && device.gatt.connected) {
+        device.gatt.disconnect();
+      }
+    });
+
+    tryAgainBtn.addEventListener('click', function () {
+      instructionText.innerHTML = initialInstructionText;
+      connectionStatus.textContent = "NOT CONNECTED";
+      connectionStatus.style.color = "#ff9800";
+
+      connectBtn.style.display = "block";
+      selectFileBtn.style.display = "none";
+      flashBtn.style.display = "none";
+      rebootBtn.style.display = "none";
+      tryAgainBtn.style.display = "none";
+      progress.style.display = "none";
+      updateProgress(0);
+    });
+
+    function updateProgress(percent) {
+      progressBar.style.width = percent.toFixed(1) + "%";
+      progressText.textContent = percent.toFixed(0) + "%";
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function formatVersionData(dataView) {
+      if (dataView.byteLength < 3) return "(invalid)";
+      const major = dataView.getUint8(dataView.byteLength - 1);
+      const minor = dataView.getUint8(dataView.byteLength - 2);
+      const patch = dataView.getUint8(dataView.byteLength - 3);
+      return `${major}.${minor}.${patch}`;
+    }
+
+    function onDisconnected() {
+      connectionStatus.textContent = "NOT CONNECTED";
+      connectionStatus.style.color = "#ff9800";
+      instructionText.innerHTML = initialInstructionText;
+
+      connectBtn.style.display = "block";
+      selectFileBtn.style.display = "none";
+      flashBtn.style.display = "none";
+      rebootBtn.style.display = "none";
+      tryAgainBtn.style.display = "none";
+      progress.style.display = "none";
+      updateProgress(0);
+    }
+  </script>
+
+</body>
+
+</html>
