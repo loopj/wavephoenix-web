@@ -107,7 +107,6 @@
       background: #333;
       margin-top: 20px;
       height: 40px;
-      /* taller */
       border-radius: 20px;
       overflow: hidden;
       display: none;
@@ -130,7 +129,6 @@
       left: 0;
       text-align: center;
       line-height: 40px;
-      /* match height */
       font-size: 18px;
       color: white;
       pointer-events: none;
@@ -207,6 +205,17 @@
     // Set initial instructions at startup
     instructionText.innerHTML = initialInstructionText;
 
+    // Web Bluetooth support check
+    if (!navigator.bluetooth) {
+      connectionStatus.textContent = "NOT SUPPORTED";
+      connectionStatus.style.color = "#f44336"; // Red
+      instructionText.innerHTML = `
+        Your browser does not support Web Bluetooth.<br><br>
+        Please try using <b>Google Chrome</b> or a compatible browser.
+      `;
+      connectBtn.style.display = "none";
+    }
+
     connectBtn.addEventListener('click', async function () {
       try {
         device = await navigator.bluetooth.requestDevice({
@@ -214,7 +223,6 @@
           optionalServices: [OTA_SERVICE_UUID]
         });
       } catch (error) {
-        // User canceled device selection
         return;
       }
 
@@ -294,7 +302,7 @@
         await controlChar.writeValue(FINISH_OTA);
         await delay(500);
 
-        progress.style.display = "none"; /* 🔥 Hide progress after success */
+        progress.style.display = "none";
         instructionText.textContent = "Firmware upload successful! Click Reboot to finish.";
         rebootBtn.style.display = "block";
 
