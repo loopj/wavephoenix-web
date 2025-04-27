@@ -30,6 +30,12 @@
       flex-grow: 1;
     }
 
+    a {
+      color: #dddddd;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
     .header-bar {
       position: fixed;
       top: 0;
@@ -39,6 +45,17 @@
       text-align: center;
       padding: 15px 0;
       z-index: 1000;
+    }
+
+    .footer-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      text-align: center;
+      padding: 8px 0;
+      font-size: 14px;
     }
 
     .card {
@@ -170,6 +187,11 @@
 
     <button id="reboot-btn" style="display:none;">Reboot Device</button>
     <button id="try-again-btn" style="display:none;">Try Again</button>
+  </div>
+
+  <div class="footer-bar">
+    Part of the <a href="https://github.com/loopj/wavephoenix">WavePhoenix</a> project,
+    art by <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
   </div>
 
   <script>
