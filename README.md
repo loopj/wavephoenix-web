@@ -4,3 +4,4 @@ Simple OTA firmware updater web app for [WavePhoenix](https://github.com/loopj/w
 
 Hosted at <https://web.wavephoenix.com>.
 
+![Screenshot](images/screenshot.jpg)
