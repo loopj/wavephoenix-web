@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WavePhoenix Web Firmware Updater</title>
   <style>
     html {
@@ -41,11 +42,19 @@
     }
 
     .card {
+      width: 450px;
+      margin: 20px auto;
+      padding: 15px;
       background: rgba(0, 0, 0, 0.75);
       border-radius: 8px;
-      padding: 15px;
-      width: 450px;
-      margin: auto;
+      box-sizing: border-box;
+    }
+
+    /* On small screens, override to 90vw */
+    @media (max-width: 600px) {
+      .card {
+        width: 90vw;
+      }
     }
 
     .card-header {
