@@ -324,7 +324,7 @@
         while (offset < totalSize) {
           const chunkEnd = Math.min(offset + CHUNK_SIZE, totalSize);
           const chunk = firmwareData.slice(offset, chunkEnd);
-          await dataChar.writeValueWithoutResponse(chunk);
+          await dataChar.writeValueWithResponse(chunk);
           offset = chunkEnd;
           updateProgress((offset / totalSize) * 100);
           await delay(4);
