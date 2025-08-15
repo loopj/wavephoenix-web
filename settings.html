@@ -1,433 +1,444 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WavePhoenix Settings</title>
     <style>
-        html {
-            height: 100%;
-        }
+      html {
+        height: 100%;
+      }
 
-        body {
-            background: #121212;
-            color: #fff;
-            font-family: sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: url('images/background.gif');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+      body {
+        background: #121212;
+        color: #fff;
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url("images/background.gif");
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
 
-        body::before,
-        body::after {
-            content: "";
-            flex-grow: 1;
-        }
+      body::before,
+      body::after {
+        content: "";
+        flex-grow: 1;
+      }
 
-        a {
-            color: #dddddd;
-            font-weight: bold;
-            text-decoration: none;
-        }
+      a {
+        color: #dddddd;
+        font-weight: bold;
+        text-decoration: none;
+      }
 
-        .header-bar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            text-align: center;
-            padding: 15px 0;
-            z-index: 1000;
-        }
+      .header-bar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        text-align: center;
+        padding: 15px 0;
+        z-index: 1000;
+      }
 
-        .footer-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            text-align: center;
-            padding: 8px 0;
-            font-size: 14px;
-        }
+      .footer-bar {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 14px;
+      }
 
+      .card {
+        width: 500px;
+        margin: 20px auto;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.75);
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+
+      .card p {
+        margin: 25px 15px;
+        line-height: 1.5;
+        text-align: center;
+      }
+
+      /* On small screens, override to 90vw */
+      @media (max-width: 600px) {
         .card {
-            width: 500px;
-            margin: 20px auto;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.75);
-            border-radius: 8px;
-            box-sizing: border-box;
+          width: 90vw;
         }
+      }
 
-        /* On small screens, override to 90vw */
-        @media (max-width: 600px) {
-            .card {
-                width: 90vw;
-            }
-        }
+      .card-header {
+        background: #333;
+        font-weight: bold;
+        padding: 8px;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 14px;
+        letter-spacing: 1px;
+      }
 
-        .card-header {
-            background: #333;
-            font-weight: bold;
-            padding: 8px;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 14px;
-            letter-spacing: 1px;
-        }
+      .status-text {
+        text-align: center;
+        margin: 20px 0;
+        font-size: 16px;
+        line-height: 1.5;
+      }
 
-        .status-text {
-            text-align: center;
-            margin: 20px 0;
-            font-size: 16px;
-            line-height: 1.5;
-        }
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        font-weight: bold;
+        font-size: 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+      }
 
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 16px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-        }
+      #connect-btn {
+        background-color: #4caf50;
+        color: white;
+      }
 
-        #connect-btn {
-            background-color: #4caf50;
-            color: white;
-        }
+      #connect-btn:hover {
+        background-color: #66bb6a;
+      }
 
-        #connect-btn:hover {
-            background-color: #66bb6a;
-        }
+      .settings-section {
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+      }
 
-        .settings-section {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-        }
+      .settings-section h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #4caf50;
+      }
 
-        .settings-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #4caf50;
-        }
+      .reg-row {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-        .reg-row {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+      .reg-row label {
+        flex: 1;
+        font-size: 14px;
+      }
 
-        .reg-row label {
-            flex: 1;
-            font-size: 14px;
-        }
+      .reg-row input,
+      .reg-row select {
+        width: 150px;
+        padding: 6px;
+        border: 1px solid #555;
+        border-radius: 4px;
+        background: #333;
+        color: #fff;
+      }
 
-        .reg-row input,
-        .reg-row select {
-            width: 150px;
-            padding: 6px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background: #333;
-            color: #fff;
-        }
+      .reg-row input[type="number"] {
+        width: 80px;
+      }
 
-        .reg-row input[type="number"] {
-            width: 80px;
-        }
+      .reg-row input[type="checkbox"] {
+        width: auto;
+        transform: scale(1.2);
+      }
 
-        .reg-row input[type="checkbox"] {
-            width: auto;
-            transform: scale(1.2);
-        }
+      .pairing-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+      }
 
-        .pairing-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
+      .pairing-buttons label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+      }
 
-        .pairing-buttons label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 13px;
-        }
+      .pairing-buttons input[type="checkbox"] {
+        transform: scale(1.1);
+      }
 
-        .pairing-buttons input[type="checkbox"] {
-            transform: scale(1.1);
-        }
+      .button-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
 
-        .button-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
+      .button-row button {
+        flex: 1;
+        margin-top: 0;
+      }
 
-        .button-row button {
-            flex: 1;
-            margin-top: 0;
-        }
+      .action-btn {
+        background-color: #2196f3;
+        color: white;
+      }
 
-        .action-btn {
-            background-color: #2196f3;
-            color: white;
-        }
+      .action-btn:hover {
+        background-color: #42a5f5;
+      }
 
-        .action-btn:hover {
-            background-color: #42a5f5;
-        }
+      .danger-btn {
+        background-color: #f44336;
+        color: white;
+      }
 
-        .danger-btn {
-            background-color: #f44336;
-            color: white;
-        }
+      .danger-btn:hover {
+        background-color: #ef5350;
+      }
 
-        .danger-btn:hover {
-            background-color: #ef5350;
-        }
+      .success-btn {
+        background-color: #4caf50;
+        color: white;
+      }
 
-        .success-btn {
-            background-color: #4caf50;
-            color: white;
-        }
+      .success-btn:hover {
+        background-color: #66bb6a;
+      }
 
-        .success-btn:hover {
-            background-color: #66bb6a;
-        }
+      #firmware-change-btn {
+        text-decoration: underline;
+        color: #007bff;
+        cursor: pointer;
+      }
 
-        .firmware-section {
-            padding: 20px;
-            text-align: center;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
+      #progress {
+        width: 100%;
+        background: #333;
+        margin-top: 20px;
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+        display: none;
+        position: relative;
+      }
 
-        .firmware-section input[type="file"] {
-            margin: 10px 0;
-            width: 100%;
-            padding: 8px;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 4px;
-            color: #fff;
-        }
+      #progress-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(to right, #4caf50, #66bb6a);
+        transition: width 0.3s ease;
+        border-radius: 15px 0 0 15px;
+      }
 
-        #progress {
-            width: 100%;
-            background: #333;
-            margin-top: 20px;
-            height: 30px;
-            border-radius: 15px;
-            overflow: hidden;
-            display: none;
-            position: relative;
-        }
+      #progress-text {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        text-align: center;
+        line-height: 30px;
+        font-size: 14px;
+        color: white;
+        pointer-events: none;
+      }
 
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(to right, #4caf50, #66bb6a);
-            transition: width 0.3s ease;
-            border-radius: 15px 0 0 15px;
-        }
+      .loading {
+        text-align: center;
+        font-style: italic;
+        color: #999;
+        margin: 20px 0;
+      }
 
-        #progress-text {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            text-align: center;
-            line-height: 30px;
-            font-size: 14px;
-            color: white;
-            pointer-events: none;
-        }
+      .hidden {
+        display: none !important;
+      }
 
-        .loading {
-            text-align: center;
-            font-style: italic;
-            color: #999;
-            margin: 20px 0;
-        }
+      .menu-section {
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+      }
 
-        .hidden {
-            display: none !important;
-        }
+      .menu-section h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #4caf50;
+        text-align: center;
+      }
 
-        .menu-section {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-        }
+      .menu-item {
+        margin-bottom: 10px;
+        background-color: #2196f3;
+        color: white;
+        padding: 15px;
+        font-size: 16px;
+      }
 
-        .menu-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #4caf50;
-            text-align: center;
-        }
+      .menu-item:hover {
+        background-color: #42a5f5;
+      }
 
-        .menu-item {
-            margin-bottom: 10px;
-            background-color: #2196f3;
-            color: white;
-            padding: 15px;
-            font-size: 16px;
-        }
+      .page-header {
+        margin-bottom: 20px;
+      }
 
-        .menu-item:hover {
-            background-color: #42a5f5;
-        }
+      .page-header h2 {
+        margin: 0;
+        color: #4caf50;
+        text-align: center;
+      }
 
-        .page-header {
-            margin-bottom: 20px;
-        }
+      .back-btn {
+        background-color: #666;
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        width: auto;
+        margin: 0;
+      }
 
-        .page-header h2 {
-            margin: 0;
-            color: #4caf50;
-            text-align: center;
-        }
-
-        .back-btn {
-            background-color: #666;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            width: auto;
-            margin: 0;
-        }
-
-        .back-btn:hover {
-            background-color: #777;
-        }
+      .back-btn:hover {
+        background-color: #777;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <div class="header-bar">
-        <img src="images/logo.svg" height="20" alt="WavePhoenix Logo">
+      <img src="images/logo.svg" height="20" alt="WavePhoenix Logo" />
     </div>
 
     <div class="card">
-        <div id="connection-status" class="card-header" style="color: #ff9800;">NOT CONNECTED</div>
+      <!-- Page Title -->
+      <div id="page-title" class="card-header"></div>
 
-        <div id="status-text" class="status-text"></div>
+      <!-- Status Text -->
+      <div id="status-text" class="status-text"></div>
+
+      <!-- Not Supported Page -->
+      <div id="not-supported-page" class="hidden">
+        <p>Your browser does not support Web Bluetooth.</p>
+        <p>Please try using <b>Google Chrome</b> or a compatible browser.</p>
+      </div>
+
+      <!-- Welcome Page -->
+      <div id="connect-page" class="hidden">
+        <p>Hold the pair button on your WavePhoenix for 3 seconds to enter management mode.</p>
+        <p>
+          The LED will begin fading on and off to indicate management mode is active. Then click
+          <em>Connect to Device</em> below.
+        </p>
 
         <button id="connect-btn">Connect to Device</button>
+      </div>
 
-        <div id="loading" class="loading hidden">Loading settings...</div>
+      <!-- Main Menu -->
+      <div id="menu-page" class="hidden">
+        <button id="menu-settings-btn" class="action-btn menu-item">Device Settings</button>
 
-        <!-- Main Menu -->
-        <div id="main-menu" class="hidden">
-            <button id="menu-settings" class="action-btn menu-item">Device Settings</button>
-            <button id="menu-firmware" class="action-btn menu-item">Firmware Update</button>
+        <button id="menu-firmware-btn" class="action-btn menu-item">Firmware Update</button>
 
-            <button id="exit-btn" class="danger-btn">Exit Settings Mode</button>
+        <button id="menu-exit-btn" class="danger-btn">Exit Settings Mode</button>
+      </div>
+
+      <!-- Settings Page -->
+      <div id="settings-page" class="hidden">
+        <div class="settings-section">
+          <h3>Wireless Configuration</h3>
+          <div class="reg-row">
+            <label for="val-0x00">Wireless Channel (1-16)</label>
+            <input type="number" id="val-0x00" min="1" max="16" />
+          </div>
+          <div class="reg-row">
+            <label for="val-0x01">Controller Type</label>
+            <select id="val-0x01">
+              <option value="0">WaveBird Receiver</option>
+              <option value="1">Wired GameCube Controller</option>
+              <option value="2">Wired GameCube Controller (No Rumble)</option>
+            </select>
+          </div>
+          <div class="reg-row">
+            <label for="val-0x02">Pin Wireless ID</label>
+            <input type="checkbox" id="val-0x02" />
+          </div>
         </div>
 
-        <!-- Settings Page -->
-        <div id="settings-page" class="hidden">
-            <div class="settings-section">
-                <h3>Wireless Configuration</h3>
-                <div class="reg-row">
-                    <label for="val-0x00">Wireless Channel (1-16)</label>
-                    <input type="number" id="val-0x00" min="1" max="16" />
-                </div>
-                <div class="reg-row">
-                    <label for="val-0x01">Controller Type</label>
-                    <select id="val-0x01">
-                        <option value="0">WaveBird Receiver</option>
-                        <option value="1">Wired GameCube Controller</option>
-                        <option value="2">Wired GameCube Controller (No Rumble)</option>
-                    </select>
-                </div>
-                <div class="reg-row">
-                    <label for="val-0x02">Pin Wireless ID</label>
-                    <input type="checkbox" id="val-0x02" />
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <h3>Pairing Buttons</h3>
-                <div class="pairing-buttons" id="pairing-buttons">
-                    <label><input type="checkbox" data-bit="0" /> Left</label>
-                    <label><input type="checkbox" data-bit="1" /> Right</label>
-                    <label><input type="checkbox" data-bit="2" /> Down</label>
-                    <label><input type="checkbox" data-bit="3" /> Up</label>
-                    <label><input type="checkbox" data-bit="4" /> Z</label>
-                    <label><input type="checkbox" data-bit="5" /> R</label>
-                    <label><input type="checkbox" data-bit="6" /> L</label>
-                    <label><input type="checkbox" data-bit="7" /> A</label>
-                    <label><input type="checkbox" data-bit="8" /> B</label>
-                    <label><input type="checkbox" data-bit="9" /> X</label>
-                    <label><input type="checkbox" data-bit="10" /> Y</label>
-                    <label><input type="checkbox" data-bit="11" /> Start</label>
-                </div>
-            </div>
-
-            <div class="button-row">
-                <button id="back-from-settings" class="action-btn">Back</button>
-                <button id="write-btn" class="success-btn">Save Settings</button>
-            </div>
+        <div class="settings-section">
+          <h3>Pairing Buttons</h3>
+          <div class="pairing-buttons" id="pairing-buttons">
+            <label><input type="checkbox" data-bit="0" /> Left</label>
+            <label><input type="checkbox" data-bit="1" /> Right</label>
+            <label><input type="checkbox" data-bit="2" /> Down</label>
+            <label><input type="checkbox" data-bit="3" /> Up</label>
+            <label><input type="checkbox" data-bit="4" /> Z</label>
+            <label><input type="checkbox" data-bit="5" /> R</label>
+            <label><input type="checkbox" data-bit="6" /> L</label>
+            <label><input type="checkbox" data-bit="7" /> A</label>
+            <label><input type="checkbox" data-bit="8" /> B</label>
+            <label><input type="checkbox" data-bit="9" /> X</label>
+            <label><input type="checkbox" data-bit="10" /> Y</label>
+            <label><input type="checkbox" data-bit="11" /> Start</label>
+          </div>
         </div>
 
-        <!-- Firmware Update Page -->
-        <div id="firmware-page" class="hidden">
-            <div class="firmware-section">
-                <div id="file-selection-area">
-                    <p style="margin-bottom: 15px;">Select a .bin firmware file to update your device.</p>
-                    <input type="file" id="firmware-file" accept=".bin" />
-                </div>
-                <div id="file-selected-area" class="hidden">
-                    <p style="margin-bottom: 15px;" id="selected-file-name"></p>
-                    <button id="change-file-btn" class="action-btn" style="margin-bottom: 10px;">Change File</button>
-                </div>
-                <button id="flash-btn" class="success-btn hidden">Flash Firmware</button>
-
-                <div id="progress">
-                    <div id="progress-bar"></div>
-                    <div id="progress-text">0%</div>
-                </div>
-            </div>
-
-            <div class="button-row">
-                <button id="back-from-firmware" class="action-btn">Back</button>
-            </div>
+        <div class="button-row">
+          <button id="settings-back-btn" class="action-btn">Back</button>
+          <button id="settings-save-btn" class="success-btn">Save Settings</button>
         </div>
+      </div>
+
+      <!-- Firmware Update Page -->
+      <div id="firmware-page" class="hidden">
+        <div id="file-selection-area">
+          <p style="margin-bottom: 15px">Select a .bin firmware file to update your device.</p>
+
+          <input type="file" id="firmware-file" accept=".bin" class="hidden" />
+          <button id="firmware-choose-btn" class="action-btn">Choose Firmware File</button>
+        </div>
+
+        <div id="file-selected-area" class="hidden">
+          <p id="selected-file-name"></p>
+          <p>
+            <a id="firmware-change-btn">Change File</a>
+          </p>
+        </div>
+
+        <div id="progress">
+          <div id="progress-bar"></div>
+          <div id="progress-text">0%</div>
+        </div>
+
+        <div class="button-row">
+          <button id="firmware-back-btn" class="action-btn">Back</button>
+          <button id="firmware-flash-btn" class="success-btn hidden">Flash Firmware</button>
+        </div>
+      </div>
     </div>
 
     <div class="footer-bar">
-        Part of the <a href="https://github.com/loopj/wavephoenix">WavePhoenix</a> project by
-        <a href="https://loopj.com">loopj</a>.
-        Art by <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
+      Part of the
+      <a href="https://github.com/loopj/wavephoenix">WavePhoenix</a> project by
+      <a href="https://loopj.com">loopj</a>. Art by
+      <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
     </div>
 
     <script type="module" src="settings.js"></script>
-
-</body>
-
+  </body>
 </html>

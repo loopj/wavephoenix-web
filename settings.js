@@ -1,81 +1,68 @@
-// Service and characteristic definitions
-import {
-  COMMANDS,
-  FirmwareImage,
-  Management,
-  SETTINGS,
-} from "./modules/management.js";
+import { COMMANDS, FirmwareImage, Management, SETTINGS } from "./modules/management.js";
 
-// DOM elements
-const connectionStatus = document.getElementById("connection-status");
-const statusText = document.getElementById("status-text");
-const connectBtn = document.getElementById("connect-btn");
-const loading = document.getElementById("loading");
-
-// Navigation elements
-const mainMenu = document.getElementById("main-menu");
+// Pages
+const notSupportedPage = document.getElementById("not-supported-page");
+const connectPage = document.getElementById("connect-page");
+const menuPage = document.getElementById("menu-page");
 const settingsPage = document.getElementById("settings-page");
 const firmwarePage = document.getElementById("firmware-page");
 
-// Menu buttons
-const menuSettings = document.getElementById("menu-settings");
-const menuFirmware = document.getElementById("menu-firmware");
-const backFromSettings = document.getElementById("back-from-settings");
-const backFromFirmware = document.getElementById("back-from-firmware");
+// Common elements
+const pageTitle = document.getElementById("page-title");
+const statusText = document.getElementById("status-text");
 
-// Settings elements
-const writeBtn = document.getElementById("write-btn");
+// Connect page elements
+const connectBtn = document.getElementById("connect-btn");
 
-// Firmware elements
+// Menu page elements
+const menuSettings = document.getElementById("menu-settings-btn");
+const menuFirmware = document.getElementById("menu-firmware-btn");
+const exitBtn = document.getElementById("menu-exit-btn");
+
+// Settings page elements
+const writeBtn = document.getElementById("settings-save-btn");
+const backFromSettings = document.getElementById("settings-back-btn");
+
+// Firmware page elements
 const firmwareFile = document.getElementById("firmware-file");
-const flashBtn = document.getElementById("flash-btn");
+const firmwareSelectBtn = document.getElementById("firmware-choose-btn");
+const firmwareChangeBtn = document.getElementById("firmware-change-btn");
+const flashBtn = document.getElementById("firmware-flash-btn");
 const progress = document.getElementById("progress");
 const progressBar = document.getElementById("progress-bar");
 const progressText = document.getElementById("progress-text");
 const fileSelectionArea = document.getElementById("file-selection-area");
 const fileSelectedArea = document.getElementById("file-selected-area");
 const selectedFileName = document.getElementById("selected-file-name");
-const changeFileBtn = document.getElementById("change-file-btn");
+const backFromFirmware = document.getElementById("firmware-back-btn");
 
-// Command elements
-const exitBtn = document.getElementById("exit-btn");
-
-let dfuInProgress = false;
+// Management client
 let mgmt = null;
 
-// Welcome message function
-function showWelcomeMessage() {
-  statusText.innerHTML = `
-                Welcome to WavePhoenix Web!<br><br>
-                Hold the pair button on your WavePhoenix for 3 seconds to enter management mode.<br><br>
-                The LED will begin breathing to indicate management mode is active. Then click Connect to Device below.
-            `;
-}
-
 // Navigation functions
-function showMainMenu() {
-  mainMenu.classList.remove("hidden");
-  settingsPage.classList.add("hidden");
-  firmwarePage.classList.add("hidden");
-  connectionStatus.textContent = "CONNECTED TO WAVEPHOENIX";
-  statusText.textContent = "";
+function showPage(page, title, titleColor) {
+  [notSupportedPage, connectPage, menuPage, settingsPage, firmwarePage].forEach((p) => {
+    p.classList.add("hidden");
+  });
+  page.classList.remove("hidden");
+  pageTitle.textContent = title;
+  pageTitle.style.color = titleColor;
 }
 
-function showSettingsPage() {
-  mainMenu.classList.add("hidden");
-  settingsPage.classList.remove("hidden");
-  firmwarePage.classList.add("hidden");
-  connectionStatus.textContent = "DEVICE SETTINGS";
-  statusText.textContent = "";
+// Web Bluetooth support check
+if (!navigator.bluetooth) {
+  showPage(notSupportedPage, "NOT SUPPORTED", "#f44336");
+} else {
+  showPage(connectPage, "NOT CONNECTED", "#ff9800");
 }
 
-function showFirmwarePage() {
-  mainMenu.classList.add("hidden");
-  settingsPage.classList.add("hidden");
-  firmwarePage.classList.remove("hidden");
-  connectionStatus.textContent = "FIRMWARE UPDATE";
-  statusText.textContent = "";
+// Navigation event listeners
+menuSettings.addEventListener("click", () => {
+  fetchSettings();
+  showPage(settingsPage, "DEVICE SETTINGS", "#4caf50");
+});
 
+menuFirmware.addEventListener("click", () => {
   // Reset firmware update state
   firmwareFile.value = "";
   fileSelectionArea.classList.remove("hidden");
@@ -84,78 +71,41 @@ function showFirmwarePage() {
   progress.style.display = "none";
   progressBar.style.width = "0%";
   progressText.textContent = "0%";
-}
 
-// Web Bluetooth support check
-if (!navigator.bluetooth) {
-  connectionStatus.textContent = "NOT SUPPORTED";
-  connectionStatus.style.color = "#f44336";
-  statusText.innerHTML = `
-        Your browser does not support Web Bluetooth.<br><br>
-        Please try using <b>Google Chrome</b> or a compatible browser.
-      `;
-  connectBtn.style.display = "none";
-} else {
-  // Show welcome message on page load
-  showWelcomeMessage();
-}
-
-// Navigation event listeners
-menuSettings.addEventListener("click", () => {
-  showSettingsPage();
-  // Auto-load settings when entering settings page
-  refreshAll();
-});
-
-menuFirmware.addEventListener("click", () => {
-  showFirmwarePage();
+  // Show the page
+  showPage(firmwarePage, "FIRMWARE UPDATE", "#4caf50");
 });
 
 backFromSettings.addEventListener("click", () => {
-  showMainMenu();
+  showPage(menuPage, "WAVEPHOENIX CONNECTED", "#4caf50");
 });
 
 backFromFirmware.addEventListener("click", () => {
-  if (mgmt && mgmt.isDFUActive()) {
-    // Cancel the upload and return to menu
-    mgmt.cancelDFU();
-    progress.style.display = "none";
-    flashBtn.classList.remove("hidden");
-    fileSelectedArea.classList.remove("hidden");
-    progressBar.style.width = "0%";
-    progressText.textContent = "0%";
-    statusText.textContent = "Firmware update cancelled.";
-    setTimeout(() => {
-      statusText.textContent = "";
-    }, 2000);
-    showMainMenu();
-  } else {
-    showMainMenu();
-  }
+  // Cancel the upload
+  if (mgmt && mgmt.isDFUActive()) mgmt.cancelDFU();
+
+  showPage(menuPage, "WAVEPHOENIX CONNECTED", "#4caf50");
 });
 
 connectBtn.addEventListener("click", async () => {
   try {
-    statusText.textContent = "Connecting to device...";
+    // Set up the management client
     mgmt = new Management();
     await mgmt.connect();
     mgmt.onDisconnect(onDisconnected);
-    connectionStatus.textContent = "CONNECTED TO WAVEPHOENIX";
-    connectionStatus.style.color = "#4caf50";
-    connectBtn.classList.add("hidden");
-    loading.classList.remove("hidden");
-    statusText.textContent = "Loading device connection...";
-    loading.classList.add("hidden");
-    showMainMenu();
+
+    // TODO: Check for required service
+
+    // Show the menu page once connected
+    showPage(menuPage, "WAVEPHOENIX CONNECTED", "#4caf50");
   } catch (e) {
     if (e.name !== "NotFoundError") {
-      statusText.textContent = "Connection failed: " + e.message;
+      console.error("Connection error:", e);
     }
-    console.error("Connection error:", e);
   }
 });
 
-async function refreshAll() {
+async function fetchSettings() {
   try {
     // Read all values
     const values = {};
@@ -171,23 +121,17 @@ async function refreshAll() {
     }
 
     // Update UI with loaded values
-    document.getElementById("val-0x00").value =
-      values[SETTINGS.WIRELESS_CHANNEL][0] + 1;
-    document.getElementById("val-0x01").value =
-      values[SETTINGS.CONTROLLER_TYPE][0];
-    document.getElementById("val-0x02").checked =
-      values[SETTINGS.PIN_WIRELESS_ID][0] !== 0;
+    document.getElementById("val-0x00").value = values[SETTINGS.WIRELESS_CHANNEL][0] + 1;
+    document.getElementById("val-0x01").value = values[SETTINGS.CONTROLLER_TYPE][0];
+    document.getElementById("val-0x02").checked = values[SETTINGS.PIN_WIRELESS_ID][0] !== 0;
 
     // Pairing Buttons: Set checkboxes based on bitmask
     const pairingValue =
-      values[SETTINGS.PAIRING_BUTTONS][0] |
-      (values[SETTINGS.PAIRING_BUTTONS][1] << 8);
-    document
-      .querySelectorAll('#pairing-buttons input[type="checkbox"]')
-      .forEach((cb) => {
-        const bit = parseInt(cb.dataset.bit);
-        cb.checked = (pairingValue & (1 << bit)) !== 0;
-      });
+      values[SETTINGS.PAIRING_BUTTONS][0] | (values[SETTINGS.PAIRING_BUTTONS][1] << 8);
+    document.querySelectorAll('#pairing-buttons input[type="checkbox"]').forEach((cb) => {
+      const bit = parseInt(cb.dataset.bit);
+      cb.checked = (pairingValue & (1 << bit)) !== 0;
+    });
   } catch (error) {
     statusText.textContent = "Failed to load settings: " + error.message;
     console.error("Settings load error:", error);
@@ -201,8 +145,7 @@ writeBtn.addEventListener("click", async () => {
     // Wireless Channel: Convert from 1-indexed to 0-indexed
     const channel = parseInt(document.getElementById("val-0x00").value) - 1;
     if (channel < 0 || channel > 15) {
-      statusText.textContent =
-        "Error: Wireless Channel must be between 1 and 16";
+      statusText.textContent = "Error: Wireless Channel must be between 1 and 16";
       setTimeout(() => {
         statusText.textContent = "";
       }, 3000);
@@ -220,14 +163,12 @@ writeBtn.addEventListener("click", async () => {
 
     // Pairing Buttons: Convert checkboxes to bitmask
     let pairingValue = 0;
-    document
-      .querySelectorAll('#pairing-buttons input[type="checkbox"]')
-      .forEach((cb) => {
-        if (cb.checked) {
-          const bit = parseInt(cb.dataset.bit);
-          pairingValue |= 1 << bit;
-        }
-      });
+    document.querySelectorAll('#pairing-buttons input[type="checkbox"]').forEach((cb) => {
+      if (cb.checked) {
+        const bit = parseInt(cb.dataset.bit);
+        pairingValue |= 1 << bit;
+      }
+    });
     const pairingBytes = [pairingValue & 0xff, (pairingValue >> 8) & 0xff];
     await mgmt.writeSetting(SETTINGS.PAIRING_BUTTONS, pairingBytes);
 
@@ -242,6 +183,10 @@ writeBtn.addEventListener("click", async () => {
 });
 
 // DFU functionality
+firmwareSelectBtn.addEventListener("click", () => {
+  firmwareFile.click();
+});
+
 firmwareFile.addEventListener("change", function () {
   if (this.files.length > 0) {
     const file = this.files[0];
@@ -265,18 +210,11 @@ firmwareFile.addEventListener("change", function () {
       flashBtn.classList.remove("hidden");
     };
     reader.readAsArrayBuffer(file.slice(0, FirmwareImage.HEADER_SIZE));
-  } else {
-    fileSelectionArea.classList.remove("hidden");
-    fileSelectedArea.classList.add("hidden");
-    flashBtn.classList.add("hidden");
   }
 });
 
-changeFileBtn.addEventListener("click", () => {
-  firmwareFile.value = "";
-  fileSelectionArea.classList.remove("hidden");
-  fileSelectedArea.classList.add("hidden");
-  flashBtn.classList.add("hidden");
+firmwareChangeBtn.addEventListener("click", () => {
+  firmwareFile.click();
 });
 
 flashBtn.addEventListener("click", async () => {
@@ -294,7 +232,6 @@ flashBtn.addEventListener("click", async () => {
   const firmwareImage = new FirmwareImage(arrayBuffer);
 
   // UI setup
-  // ...existing code...
   progress.style.display = "block";
   progressBar.style.width = "0%";
   progressText.textContent = "0%";
@@ -329,38 +266,17 @@ exitBtn.addEventListener("click", async () => {
     onDisconnected();
   } catch (err) {
     statusText.textContent = err.message;
-    setTimeout(() => {
-      statusText.textContent = "";
-    }, 3000);
   }
 });
 
 function onDisconnected() {
-  console.log("Device disconnected");
+  showPage(connectPage, "WAVEPHOENIX DISCONNECTED", "#ff9800");
 
-  characteristic = null;
-  commandCharacteristic = null;
-  firmwareDataCharacteristic = null;
-  device = null;
-
-  connectionStatus.textContent = "WAVEPHOENIX DISCONNECTED";
-  connectionStatus.style.color = "#ff9800";
-
-  // Show the standard welcome message
-  showWelcomeMessage(); // Reset all UI states
+  // Reset all UI states
   connectBtn.classList.remove("hidden");
-  loading.classList.add("hidden");
-  mainMenu.classList.add("hidden");
-  settingsPage.classList.add("hidden");
-  firmwarePage.classList.add("hidden");
+
   flashBtn.classList.add("hidden");
   progress.style.display = "none";
   progressBar.style.width = "0%";
   progressText.textContent = "0%";
-
-  // Reset firmware file selection
-  firmwareFile.value = "";
-  fileSelectionArea.classList.remove("hidden");
-  fileSelectedArea.classList.add("hidden");
-  dfuInProgress = false;
 }
