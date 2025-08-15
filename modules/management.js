@@ -45,8 +45,17 @@ export class FirmwareImage {
     };
   }
 
+  getVersionString() {
+    const version = this.getVersion();
+    return `${version.major}.${version.minor}.${version.revision}`;
+  }
+
   getSize() {
     return this.data.length;
+  }
+
+  async getSHA256() {
+    return await crypto.subtle.digest("SHA-256", this.data);
   }
 }
 
@@ -57,6 +66,7 @@ export class Management {
   #settingsChar = null;
   #commandsChar = null;
   #firmwareDataChar = null;
+  #disconnectCallback = null;
 
   async connect() {
     this.#device = await navigator.bluetooth.requestDevice({
@@ -68,15 +78,13 @@ export class Management {
     const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
     this.#settingsChar = await service.getCharacteristic(SETTINGS_CHAR_UUID);
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
-    this.#firmwareDataChar = await service.getCharacteristic(
-      FIRMWARE_DATA_CHAR_UUID
-    );
+    this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
+
+    this.#device.addEventListener("gattserverdisconnected", this.#disconnectCallback);
   }
 
   onDisconnect(callback) {
-    if (this.#device) {
-      this.#device.addEventListener("gattserverdisconnected", callback);
-    }
+    this.#disconnectCallback = callback;
   }
 
   async sendCommand(commandCode) {
@@ -102,7 +110,7 @@ export class Management {
     }
   }
 
-  async startDFU(firmwareData, onProgress) {
+  async startDFU(firmwareImage, onProgress) {
     const CHUNK_SIZE = 64;
     this.#dfuCancelled = false;
     this.#dfuActive = true;
@@ -115,13 +123,13 @@ export class Management {
     await this._delay(100);
 
     // Step 2: Send firmware data in chunks
-    while (offset < firmwareData.length) {
+    while (offset < firmwareImage.data.length) {
       // Handle cancellation
       if (this.#dfuCancelled) throw new Error("DFU cancelled by user");
 
       // Get the next chunk
-      const chunkEnd = Math.min(offset + CHUNK_SIZE, firmwareData.length);
-      let chunk = firmwareData.slice(offset, chunkEnd);
+      const chunkEnd = Math.min(offset + CHUNK_SIZE, firmwareImage.data.length);
+      let chunk = firmwareImage.data.slice(offset, chunkEnd);
       if (chunk.length < CHUNK_SIZE) {
         const padded = new Uint8Array(CHUNK_SIZE);
         padded.set(chunk);
@@ -134,8 +142,7 @@ export class Management {
       offset = chunkEnd;
 
       // Update progress
-      if (onProgress)
-        onProgress(Math.round((offset / firmwareData.length) * 100));
+      if (onProgress) onProgress(Math.round((offset / firmwareImage.data.length) * 100));
     }
 
     // Step 3: Send DFU_APPLY command
@@ -149,14 +156,12 @@ export class Management {
   }
 
   cancelDFU() {
+    if (!this.#dfuActive) return;
+
     this.#dfuCancelled = true;
     this.#dfuActive = false;
 
     console.log("DFU cancelled by user");
-  }
-
-  isDFUActive() {
-    return this.#dfuActive;
   }
 
   _delay(ms) {

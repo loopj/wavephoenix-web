@@ -79,7 +79,7 @@
         }
       }
 
-      .card-header {
+      #page-title {
         background: #333;
         font-weight: bold;
         padding: 8px;
@@ -89,7 +89,7 @@
         letter-spacing: 1px;
       }
 
-      .status-text {
+      #status-text {
         text-align: center;
         margin: 20px 0;
         font-size: 16px;
@@ -115,68 +115,6 @@
 
       #connect-btn:hover {
         background-color: #66bb6a;
-      }
-
-      .settings-section {
-        margin: 20px 0;
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
-      }
-
-      .settings-section h3 {
-        margin-top: 0;
-        margin-bottom: 15px;
-        color: #4caf50;
-      }
-
-      .reg-row {
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .reg-row label {
-        flex: 1;
-        font-size: 14px;
-      }
-
-      .reg-row input,
-      .reg-row select {
-        width: 150px;
-        padding: 6px;
-        border: 1px solid #555;
-        border-radius: 4px;
-        background: #333;
-        color: #fff;
-      }
-
-      .reg-row input[type="number"] {
-        width: 80px;
-      }
-
-      .reg-row input[type="checkbox"] {
-        width: auto;
-        transform: scale(1.2);
-      }
-
-      .pairing-buttons {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-top: 10px;
-      }
-
-      .pairing-buttons label {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 13px;
-      }
-
-      .pairing-buttons input[type="checkbox"] {
-        transform: scale(1.1);
       }
 
       .button-row {
@@ -223,18 +161,17 @@
         cursor: pointer;
       }
 
-      #progress {
+      #firmware-progress-area {
         width: 100%;
         background: #333;
         margin-top: 20px;
         height: 30px;
         border-radius: 15px;
         overflow: hidden;
-        display: none;
         position: relative;
       }
 
-      #progress-bar {
+      #firmware-progress-bar {
         width: 0%;
         height: 100%;
         background: linear-gradient(to right, #4caf50, #66bb6a);
@@ -242,7 +179,7 @@
         border-radius: 15px 0 0 15px;
       }
 
-      #progress-text {
+      #firmware-progress-text {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -255,29 +192,8 @@
         pointer-events: none;
       }
 
-      .loading {
-        text-align: center;
-        font-style: italic;
-        color: #999;
-        margin: 20px 0;
-      }
-
       .hidden {
         display: none !important;
-      }
-
-      .menu-section {
-        margin: 20px 0;
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
-      }
-
-      .menu-section h3 {
-        margin-top: 0;
-        margin-bottom: 15px;
-        color: #4caf50;
-        text-align: center;
       }
 
       .menu-item {
@@ -291,32 +207,6 @@
       .menu-item:hover {
         background-color: #42a5f5;
       }
-
-      .page-header {
-        margin-bottom: 20px;
-      }
-
-      .page-header h2 {
-        margin: 0;
-        color: #4caf50;
-        text-align: center;
-      }
-
-      .back-btn {
-        background-color: #666;
-        color: white;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        width: auto;
-        margin: 0;
-      }
-
-      .back-btn:hover {
-        background-color: #777;
-      }
     </style>
   </head>
 
@@ -327,10 +217,10 @@
 
     <div class="card">
       <!-- Page Title -->
-      <div id="page-title" class="card-header"></div>
+      <div id="page-title"></div>
 
       <!-- Status Text -->
-      <div id="status-text" class="status-text"></div>
+      <div id="status-text"></div>
 
       <!-- Not Supported Page -->
       <div id="not-supported-page" class="hidden">
@@ -352,51 +242,16 @@
       <!-- Main Menu -->
       <div id="menu-page" class="hidden">
         <button id="menu-settings-btn" class="action-btn menu-item">Device Settings</button>
-
         <button id="menu-firmware-btn" class="action-btn menu-item">Firmware Update</button>
 
-        <button id="menu-exit-btn" class="danger-btn">Exit Settings Mode</button>
+        <div class="button-row">
+          <button id="menu-exit-btn" class="danger-btn">Exit Settings Mode</button>
+        </div>
       </div>
 
       <!-- Settings Page -->
       <div id="settings-page" class="hidden">
-        <div class="settings-section">
-          <h3>Wireless Configuration</h3>
-          <div class="reg-row">
-            <label for="val-0x00">Wireless Channel (1-16)</label>
-            <input type="number" id="val-0x00" min="1" max="16" />
-          </div>
-          <div class="reg-row">
-            <label for="val-0x01">Controller Type</label>
-            <select id="val-0x01">
-              <option value="0">WaveBird Receiver</option>
-              <option value="1">Wired GameCube Controller</option>
-              <option value="2">Wired GameCube Controller (No Rumble)</option>
-            </select>
-          </div>
-          <div class="reg-row">
-            <label for="val-0x02">Pin Wireless ID</label>
-            <input type="checkbox" id="val-0x02" />
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <h3>Pairing Buttons</h3>
-          <div class="pairing-buttons" id="pairing-buttons">
-            <label><input type="checkbox" data-bit="0" /> Left</label>
-            <label><input type="checkbox" data-bit="1" /> Right</label>
-            <label><input type="checkbox" data-bit="2" /> Down</label>
-            <label><input type="checkbox" data-bit="3" /> Up</label>
-            <label><input type="checkbox" data-bit="4" /> Z</label>
-            <label><input type="checkbox" data-bit="5" /> R</label>
-            <label><input type="checkbox" data-bit="6" /> L</label>
-            <label><input type="checkbox" data-bit="7" /> A</label>
-            <label><input type="checkbox" data-bit="8" /> B</label>
-            <label><input type="checkbox" data-bit="9" /> X</label>
-            <label><input type="checkbox" data-bit="10" /> Y</label>
-            <label><input type="checkbox" data-bit="11" /> Start</label>
-          </div>
-        </div>
+        <p>TODO</p>
 
         <div class="button-row">
           <button id="settings-back-btn" class="action-btn">Back</button>
@@ -406,23 +261,23 @@
 
       <!-- Firmware Update Page -->
       <div id="firmware-page" class="hidden">
-        <div id="file-selection-area">
-          <p style="margin-bottom: 15px">Select a .bin firmware file to update your device.</p>
+        <div id="firmware-file-selection-area">
+          <p>Select a firmware file to update your device.</p>
 
           <input type="file" id="firmware-file" accept=".bin" class="hidden" />
           <button id="firmware-choose-btn" class="action-btn">Choose Firmware File</button>
         </div>
 
-        <div id="file-selected-area" class="hidden">
+        <div id="firmware-file-selected-area" class="hidden">
           <p id="selected-file-name"></p>
           <p>
             <a id="firmware-change-btn">Change File</a>
           </p>
         </div>
 
-        <div id="progress">
-          <div id="progress-bar"></div>
-          <div id="progress-text">0%</div>
+        <div id="firmware-progress-area" class="hidden">
+          <div id="firmware-progress-bar"></div>
+          <div id="firmware-progress-text">0%</div>
         </div>
 
         <div class="button-row">
