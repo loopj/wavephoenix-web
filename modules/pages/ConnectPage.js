@@ -16,6 +16,10 @@ export class ConnectPage extends Page {
 
   connectButtonClicked = async () => {
     try {
+      // Show loading state
+      this.#connectBtn.classList.add("btn-loading");
+      this.#connectBtn.disabled = true;
+
       // Attempt to connect the client
       await this.client.connect();
 
@@ -28,6 +32,10 @@ export class ConnectPage extends Page {
       } else {
         console.error("Bluetooth connection failed");
       }
+    } finally {
+      // Hide loading state
+      this.#connectBtn.classList.remove("btn-loading");
+      this.#connectBtn.disabled = false;
     }
   };
 }

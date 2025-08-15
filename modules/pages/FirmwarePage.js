@@ -30,6 +30,7 @@ export class FirmwarePage extends Page {
     // Hook up event listeners
     this.#backBtn?.addEventListener("click", this.backButtonClicked);
     this.#flashBtn?.addEventListener("click", this.flashButtonClicked);
+    this.#fileInput?.addEventListener("click", this.fileInputClicked);
     this.#fileInput?.addEventListener("change", this.fileInputChanged);
     this.#chooseBtn?.addEventListener("click", this.chooseButtonClicked);
     this.#changeBtn?.addEventListener("click", this.changeButtonClicked);
@@ -79,6 +80,8 @@ export class FirmwarePage extends Page {
 
     showPage("menu");
   };
+
+  fileInputClicked = (event) => {};
 
   fileInputChanged = async (event) => {
     // Return early if no file is selected

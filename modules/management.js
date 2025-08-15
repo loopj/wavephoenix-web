@@ -91,7 +91,7 @@ export class Management {
     await this.#commandsChar.writeValue(Uint8Array.of(commandCode));
   }
 
-  async getSetting(settingCode) {
+  async readSetting(settingCode) {
     await this.#settingsChar.writeValue(Uint8Array.of(settingCode));
     const value = await this.#settingsChar.readValue();
     return value;

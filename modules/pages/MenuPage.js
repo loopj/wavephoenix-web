@@ -1,3 +1,4 @@
+import { COMMANDS } from "../management.js";
 import { Page, showPage } from "../page.js";
 
 export class MenuPage extends Page {
@@ -34,7 +35,9 @@ export class MenuPage extends Page {
       // Show the connect page
       showPage("connect");
     } catch (err) {
-      console.log("TODO");
+      // Exiting management mode on the device immediately disables
+      // Bluetooth, so let's ignore GATT errors
+      console.debug("Error during exit:", err);
     }
   };
 }
