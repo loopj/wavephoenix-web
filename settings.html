@@ -35,6 +35,73 @@
         text-decoration: none;
       }
 
+      button {
+        font-family: inherit;
+        font-size: 1rem;
+        padding: 0.75em 1.5em;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        display: inline-block;
+        text-align: center;
+        min-width: 0;
+        font-weight: bold;
+      }
+
+      button.primary {
+        background: #8e287b;
+        color: #fff;
+      }
+      button.primary:hover {
+        background: color-mix(in srgb, #8e287b 90%, white 10%);
+      }
+
+      button.secondary {
+        background: #e9d5ff;
+        color: #8e287b;
+      }
+      button.secondary:hover {
+        background: color-mix(in srgb, #e9d5ff 70%, white 30%);
+      }
+
+      button.outline {
+        background: none;
+        color: #f3e8ff;
+        border: 1px solid #f3e8ff66;
+        text-decoration: none;
+      }
+      button.outline:hover {
+        background: #e9d5ff22;
+      }
+
+      button.loading {
+        position: relative;
+        color: transparent !important;
+      }
+
+      button.loading::before {
+        content: "";
+        display: inline-block;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        margin-left: -9px;
+        margin-top: -10px;
+        border: 2px solid #fff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       .header-bar {
         position: fixed;
         top: 0;
@@ -60,9 +127,9 @@
       .card {
         width: 500px;
         margin: 20px auto;
-        padding: 15px;
+        /* padding: 5px 15px 15px 15px; */
         background: rgba(0, 0, 0, 0.75);
-        border-radius: 8px;
+        border-radius: 15px;
         box-sizing: border-box;
       }
 
@@ -79,80 +146,51 @@
         }
       }
 
-      #page-title {
-        background: #333;
+      .card-title {
         font-weight: bold;
-        padding: 8px;
-        border-radius: 4px;
+        margin: 25px 15px;
         text-align: center;
         font-size: 14px;
         letter-spacing: 1px;
       }
 
-      #status-text {
-        text-align: center;
-        margin: 20px 0;
-        font-size: 16px;
-        line-height: 1.5;
+      .card-title.not-supported {
+        color: #f44336;
       }
 
-      button {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        font-weight: bold;
-        font-size: 16px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
+      .card-title.not-connected {
+        color: #ff9800;
       }
 
-      #connect-btn {
-        background-color: #4caf50;
-        color: white;
+      .card-title.connected {
+        color: #4caf50;
       }
 
-      #connect-btn:hover {
-        background-color: #66bb6a;
+      .card-body {
+        margin: 25px 15px;
+        box-sizing: border-box;
       }
 
-      .button-row {
+      .card-actions {
         display: flex;
-        gap: 10px;
-        margin-top: 15px;
+        gap: 15px;
+        margin: 15px;
       }
 
-      .button-row button {
-        flex: 1;
+      .card-actions button {
+        flex: 1 1 0;
         margin-top: 0;
       }
 
-      .action-btn {
-        background-color: #2196f3;
-        color: white;
+      button.menu-item {
+        display: block;
+        width: 100%;
+        margin: 0.5em 0;
       }
 
-      .action-btn:hover {
-        background-color: #42a5f5;
-      }
-
-      .danger-btn {
-        background-color: #f44336;
-        color: white;
-      }
-
-      .danger-btn:hover {
-        background-color: #ef5350;
-      }
-
-      .success-btn {
-        background-color: #4caf50;
-        color: white;
-      }
-
-      .success-btn:hover {
-        background-color: #66bb6a;
+      .button-menu button {
+        display: block;
+        width: 100%;
       }
 
       .settings-row {
@@ -175,31 +213,23 @@
         text-align: left;
       }
 
-      #firmware-change-btn {
-        text-decoration: underline;
-        color: #007bff;
-        cursor: pointer;
-      }
-
-      #firmware-progress-area {
+      .progress-bar {
+        position: relative;
         width: 100%;
-        background: #333;
-        margin-top: 20px;
         height: 30px;
         border-radius: 15px;
         overflow: hidden;
-        position: relative;
+        background: #00000044;
       }
 
-      #firmware-progress-bar {
+      .progress-bar-fill {
         width: 0%;
         height: 100%;
         background: linear-gradient(to right, #4caf50, #66bb6a);
-        transition: width 0.3s ease;
-        border-radius: 15px 0 0 15px;
+        transition: width 0.5s ease;
       }
 
-      #firmware-progress-text {
+      .progress-bar-text {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -215,45 +245,6 @@
       .hidden {
         display: none !important;
       }
-
-      .menu-item {
-        margin-bottom: 10px;
-        background-color: #2196f3;
-        color: white;
-        padding: 15px;
-        font-size: 16px;
-      }
-
-      .menu-item:hover {
-        background-color: #42a5f5;
-      }
-
-      .btn-loading {
-        position: relative;
-        color: transparent !important;
-      }
-
-      .btn-loading::before {
-        content: "";
-        display: inline-block;
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 18px;
-        height: 18px;
-        margin-left: -9px;
-        margin-top: -9px;
-        border: 2px solid #fff;
-        border-top: 2px solid #4caf50;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-      }
-
-      @keyframes spin {
-        100% {
-          transform: rotate(360deg);
-        }
-      }
     </style>
   </head>
 
@@ -262,128 +253,141 @@
       <img src="images/logo.svg" height="20" alt="WavePhoenix Logo" />
     </div>
 
-    <div class="card">
-      <!-- Page Title -->
-      <div id="page-title"></div>
+    <!-- Not Supported Page -->
+    <div id="not-supported-page" class="card hidden">
+      <div class="card-title not-supported">NOT SUPPORTED</div>
 
-      <!-- Status Text -->
-      <div id="status-text"></div>
-
-      <!-- Not Supported Page -->
-      <div id="not-supported-page" class="hidden">
+      <div class="card-body">
         <p>Your browser does not support Web Bluetooth.</p>
         <p>Please try using <b>Google Chrome</b> or a compatible browser.</p>
       </div>
+    </div>
 
-      <!-- Welcome Page -->
-      <div id="connect-page" class="hidden">
+    <!-- Welcome Page -->
+    <div id="connect-page" class="card hidden">
+      <div class="card-title not-connected">NOT CONNECTED</div>
+
+      <div class="card-body">
         <p>Hold the pair button on your WavePhoenix for 3 seconds to enter management mode.</p>
         <p>
           The LED will begin fading on and off to indicate management mode is active. Then click
           <em>Connect to Device</em> below.
         </p>
-
-        <button id="connect-btn">Connect to Device</button>
       </div>
 
-      <!-- Main Menu -->
-      <div id="menu-page" class="hidden">
-        <button id="menu-settings-btn" class="action-btn menu-item">Device Settings</button>
-        <button id="menu-firmware-btn" class="action-btn menu-item">Firmware Update</button>
+      <div class="card-actions">
+        <button id="connect-btn" class="primary">Connect to Device</button>
+      </div>
+    </div>
 
-        <div class="button-row">
-          <button id="menu-exit-btn" class="danger-btn">Exit Settings Mode</button>
+    <!-- Main Menu -->
+    <div id="menu-page" class="card hidden">
+      <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
+
+      <div class="card-body">
+        <button id="menu-settings-btn" class="primary menu-item">Device Settings</button>
+        <button id="menu-firmware-btn" class="primary menu-item">Firmware Update</button>
+      </div>
+
+      <div class="card-actions">
+        <button id="menu-exit-btn" class="secondary">Exit Settings Mode</button>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div id="settings-page" class="card hidden">
+      <div class="card-title connected">DEVICE SETTINGS</div>
+
+      <div id="settings-rows" class="card-body">
+        <div class="settings-row">
+          <label for="settings-wireless-channel">Wireless Channel</label>
+          <select id="settings-wireless-channel">
+            <option value="0">1</option>
+            <option value="1">2</option>
+            <option value="2">3</option>
+            <option value="3">4</option>
+            <option value="4">5</option>
+            <option value="5">6</option>
+            <option value="6">7</option>
+            <option value="7">8</option>
+            <option value="8">9</option>
+            <option value="9">10</option>
+            <option value="10">11</option>
+            <option value="11">12</option>
+            <option value="12">13</option>
+            <option value="13">14</option>
+            <option value="14">15</option>
+            <option value="15">16</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <label for="settings-controller-type">Controller Type</label>
+          <select id="settings-controller-type">
+            <option value="0">WaveBird</option>
+            <option value="1">Wired Controller</option>
+            <option value="2">Wired Controller (No Motor)</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <label for="settings-pin-wireless-id">Wireless ID Pinning</label>
+          <input type="checkbox" id="settings-pin-wireless-id" />
+        </div>
+
+        <div class="settings-row">
+          <label for="settings-pairing-buttons">Pairing Buttons</label>
+          <select id="settings-pairing-buttons" multiple class="hidden">
+            <option value="0">Left</option>
+            <option value="1">Right</option>
+            <option value="2">Down</option>
+            <option value="3">Up</option>
+            <option value="4">Z</option>
+            <option value="5">R</option>
+            <option value="6">L</option>
+            <option value="7">A</option>
+            <option value="8">B</option>
+            <option value="9">X</option>
+            <option value="10">Y</option>
+            <option value="11">Start</option>
+          </select>
         </div>
       </div>
 
-      <!-- Settings Page -->
-      <div id="settings-page" class="hidden">
-        <div id="settings-rows">
-          <div class="settings-row">
-            <label for="settings-wireless-channel">Wireless Channel</label>
-            <select id="settings-wireless-channel">
-              <option value="0">1</option>
-              <option value="1">2</option>
-              <option value="2">3</option>
-              <option value="3">4</option>
-              <option value="4">5</option>
-              <option value="5">6</option>
-              <option value="6">7</option>
-              <option value="7">8</option>
-              <option value="8">9</option>
-              <option value="9">10</option>
-              <option value="10">11</option>
-              <option value="11">12</option>
-              <option value="12">13</option>
-              <option value="13">14</option>
-              <option value="14">15</option>
-              <option value="15">16</option>
-            </select>
-          </div>
+      <div class="card-actions">
+        <button id="settings-back-btn" class="secondary">Back</button>
+      </div>
+    </div>
 
-          <div class="settings-row">
-            <label for="settings-controller-type">Controller Type</label>
-            <select id="settings-controller-type">
-              <option value="0">WaveBird</option>
-              <option value="1">Wired Controller</option>
-              <option value="2">Wired Controller (No Motor)</option>
-            </select>
-          </div>
+    <!-- Firmware Update Page -->
+    <div id="firmware-page" class="card hidden">
+      <div class="card-title connected">FIRMWARE UPDATE</div>
 
-          <div class="settings-row">
-            <label for="settings-pin-wireless-id">Wireless ID Pinning</label>
-            <input type="checkbox" id="settings-pin-wireless-id" />
-          </div>
+      <div id="firmware-file-selection-area" class="card-body">
+        <p id="firmware-file-selection-info">Select a firmware file to update your device.</p>
+        <p>
+          <button id="firmware-choose-btn" class="primary">Choose Firmware File</button>
+        </p>
+        <input type="file" id="firmware-file" accept=".bin" class="hidden" />
+      </div>
 
-          <div class="settings-row">
-            <label for="settings-pairing-buttons">Pairing Buttons</label>
-            <select id="settings-pairing-buttons" multiple class="hidden">
-              <option value="0">Left</option>
-              <option value="1">Right</option>
-              <option value="2">Down</option>
-              <option value="3">Up</option>
-              <option value="4">Z</option>
-              <option value="5">R</option>
-              <option value="6">L</option>
-              <option value="7">A</option>
-              <option value="8">B</option>
-              <option value="9">X</option>
-              <option value="10">Y</option>
-              <option value="11">Start</option>
-            </select>
-          </div>
-        </div>
+      <div id="firmware-file-selected-area" class="card-body hidden">
+        <p id="firmware-file-selected-info"></p>
+        <p>
+          <button id="firmware-change-btn" class="outline">Change File</button>
+        </p>
+      </div>
 
-        <div class="button-row">
-          <button id="settings-back-btn" class="action-btn">Back</button>
+      <div id="firmware-progress-area" class="card-body hidden">
+        <div id="firmware-progress-bar" class="progress-bar">
+          <div class="progress-bar-fill"></div>
+          <div class="progress-bar-text">0%</div>
         </div>
       </div>
 
-      <!-- Firmware Update Page -->
-      <div id="firmware-page" class="hidden">
-        <div id="firmware-file-selection-area">
-          <p>Select a firmware file to update your device.</p>
-
-          <input type="file" id="firmware-file" accept=".bin" class="hidden" />
-          <button id="firmware-choose-btn" class="action-btn">Choose Firmware File</button>
-        </div>
-
-        <div id="firmware-file-selected-area" class="hidden">
-          <p id="selected-file-name"></p>
-          <p>
-            <a id="firmware-change-btn">Change File</a>
-          </p>
-        </div>
-
-        <div id="firmware-progress-area" class="hidden">
-          <div id="firmware-progress-bar"></div>
-          <div id="firmware-progress-text">0%</div>
-        </div>
-
-        <div class="button-row">
-          <button id="firmware-back-btn" class="action-btn">Back</button>
-          <button id="firmware-flash-btn" class="success-btn hidden">Flash Firmware</button>
-        </div>
+      <div class="card-actions">
+        <button id="firmware-back-btn" class="secondary">Back</button>
+        <button id="firmware-flash-btn" class="primary hidden">Flash Firmware</button>
       </div>
     </div>
 

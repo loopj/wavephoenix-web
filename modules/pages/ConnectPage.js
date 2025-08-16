@@ -5,7 +5,7 @@ export class ConnectPage extends Page {
 
   constructor(client) {
     // Register the page
-    super("connect-page", "NOT CONNECTED", "#ff9800");
+    super("connect-page");
 
     // Save the management client
     this.client = client;
@@ -17,7 +17,7 @@ export class ConnectPage extends Page {
   connectButtonClicked = async () => {
     try {
       // Show loading state
-      this.#connectBtn.classList.add("btn-loading");
+      this.#connectBtn.classList.add("loading");
       this.#connectBtn.disabled = true;
 
       // Attempt to connect the client
@@ -34,7 +34,7 @@ export class ConnectPage extends Page {
       }
     } finally {
       // Hide loading state
-      this.#connectBtn.classList.remove("btn-loading");
+      this.#connectBtn.classList.remove("loading");
       this.#connectBtn.disabled = false;
     }
   };

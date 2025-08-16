@@ -6,23 +6,28 @@ export class FirmwarePage extends Page {
   #backBtn = document.getElementById("firmware-back-btn");
   #flashBtn = document.getElementById("firmware-flash-btn");
 
+  // Error message
+  #errorMessage = document.getElementById("firmware-error");
+
   // File selection
   #fileSelectionArea = document.getElementById("firmware-file-selection-area");
+  #fileSelectionInfo = document.getElementById("firmware-file-selection-info");
   #fileInput = document.getElementById("firmware-file");
   #chooseBtn = document.getElementById("firmware-choose-btn");
 
   // File selected area
   #fileSelectedArea = document.getElementById("firmware-file-selected-area");
+  #fileSelectedInfo = document.getElementById("firmware-file-selected-info");
   #changeBtn = document.getElementById("firmware-change-btn");
 
   // Upload progress
   #progressArea = document.getElementById("firmware-progress-area");
-  #progressBar = document.getElementById("firmware-progress-bar");
-  #progressText = document.getElementById("firmware-progress-text");
+  #progressBarFill = document.querySelector("#firmware-progress-bar .progress-bar-fill");
+  #progressBarText = document.querySelector("#firmware-progress-bar .progress-bar-text");
 
   constructor(client) {
     // Register the page
-    super("firmware-page", "FIRMWARE UPDATE", "#4caf50");
+    super("firmware-page");
 
     // Store the management client
     this.client = client;
@@ -30,7 +35,6 @@ export class FirmwarePage extends Page {
     // Hook up event listeners
     this.#backBtn?.addEventListener("click", this.backButtonClicked);
     this.#flashBtn?.addEventListener("click", this.flashButtonClicked);
-    this.#fileInput?.addEventListener("click", this.fileInputClicked);
     this.#fileInput?.addEventListener("change", this.fileInputChanged);
     this.#chooseBtn?.addEventListener("click", this.chooseButtonClicked);
     this.#changeBtn?.addEventListener("click", this.changeButtonClicked);
@@ -64,15 +68,14 @@ export class FirmwarePage extends Page {
 
     try {
       await this.client.startDFU(firmwareImage, (percent) => {
-        this.#progressBar.style.width = percent + "%";
-        this.#progressText.textContent = percent + "%";
+        this.#progressBarFill.style.width = percent + "%";
+        this.#progressBarText.textContent = percent + "%";
       });
     } catch (error) {
       console.error("DFU process failed:", error);
     }
 
     // TODO: Think about if we should show reboot, sha256 check, etc?
-    this.setStatus("Firmware update completed successfully!");
   };
 
   backButtonClicked = () => {
@@ -81,8 +84,6 @@ export class FirmwarePage extends Page {
     showPage("menu");
   };
 
-  fileInputClicked = (event) => {};
-
   fileInputChanged = async (event) => {
     // Return early if no file is selected
     if (this.#fileInput.files.length === 0) {
@@ -90,17 +91,23 @@ export class FirmwarePage extends Page {
       return;
     }
 
+    // Reset the file selection area
+    this.#fileSelectionArea.classList.remove("hidden");
+    this.#fileSelectedArea.classList.add("hidden");
+    this.#flashBtn.classList.add("hidden");
+
     // Parse the firmware image
     const file = this.#fileInput.files[0];
     const firmwareImage = new FirmwareImage(await file.arrayBuffer());
 
     // Check if the firmware image is valid
     if (!firmwareImage.checkMagicNumber()) {
-      this.setStatus("Invalid firmware file selected!");
-      console.info("Invalid firmware file: bad magic number");
+      // Show the error
+      this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected.`;
     } else {
       // Show the selected firmware information
-      this.setStatus(`Selected ${file.name}, version ${firmwareImage.getVersionString()}`);
+      const version = firmwareImage.getVersionString();
+      this.#fileSelectedInfo.textContent = `WavePhoenix firmware found, version ${version}`;
 
       // Toggle the "firmware selected" area
       this.#fileSelectionArea.classList.add("hidden");
@@ -117,17 +124,15 @@ export class FirmwarePage extends Page {
 
     // Show only the file selection area
     this.#fileSelectionArea.classList.remove("hidden");
+    this.#fileSelectionInfo.textContent = "Select a firmware file to update your device.";
     this.#fileSelectedArea.classList.add("hidden");
     this.#progressArea.classList.add("hidden");
 
     // Reset progress bar
-    this.#progressBar.style.width = "0%";
-    this.#progressText.textContent = "0%";
+    this.#progressBarFill.style.width = "0%";
+    this.#progressBarText.textContent = "0%";
 
     // Hide the flash button
     this.#flashBtn.classList.add("hidden");
-
-    // Clear any previous status messages
-    this.clearStatus();
   }
 }

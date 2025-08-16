@@ -11,7 +11,7 @@ export class SettingsPage extends Page {
 
   constructor(client) {
     // Register the page
-    super("settings-page", "DEVICE SETTINGS", "#4caf50");
+    super("settings-page");
 
     // Store the management client
     this.client = client;

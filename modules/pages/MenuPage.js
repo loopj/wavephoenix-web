@@ -8,7 +8,7 @@ export class MenuPage extends Page {
 
   constructor(client) {
     // Register the page
-    super("menu-page", "WAVEPHOENIX CONNECTED", "#4caf50");
+    super("menu-page");
 
     // Store the management client
     this.client = client;

@@ -19,37 +19,18 @@ export function showPage(name) {
 }
 
 export class Page {
-  #pageTitle = document.getElementById("page-title");
-  #statusText = document.getElementById("status-text");
-
-  constructor(elementId, title, titleColor) {
-    this.title = title;
-    this.titleColor = titleColor;
+  constructor(elementId) {
     this.el = document.getElementById(elementId);
   }
 
   show() {
     this.el.classList.remove("hidden");
-    if (this.#pageTitle) {
-      this.#pageTitle.textContent = this.title;
-      this.#pageTitle.style.color = this.titleColor;
-    }
-
     this.onShow();
   }
 
   hide() {
     this.el.classList.add("hidden");
-    this.clearStatus();
     this.onHide();
-  }
-
-  setStatus(text) {
-    this.#statusText.textContent = text;
-  }
-
-  clearStatus() {
-    this.#statusText.textContent = "";
   }
 
   onShow() {}

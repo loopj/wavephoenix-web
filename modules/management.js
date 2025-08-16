@@ -69,10 +69,12 @@ export class Management {
   #disconnectCallback = null;
 
   async connect() {
-    this.#device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: "WavePhoenix" }],
-      optionalServices: [MANAGEMENT_SERVICE_UUID],
-    });
+    if (!this.#device) {
+      this.#device = await navigator.bluetooth.requestDevice({
+        filters: [{ name: "WavePhoenix" }],
+        optionalServices: [MANAGEMENT_SERVICE_UUID],
+      });
+    }
 
     const server = await this.#device.gatt.connect();
     const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
@@ -129,12 +131,7 @@ export class Management {
 
       // Get the next chunk
       const chunkEnd = Math.min(offset + CHUNK_SIZE, firmwareImage.data.length);
-      let chunk = firmwareImage.data.slice(offset, chunkEnd);
-      if (chunk.length < CHUNK_SIZE) {
-        const padded = new Uint8Array(CHUNK_SIZE);
-        padded.set(chunk);
-        chunk = padded;
-      }
+      const chunk = firmwareImage.data.slice(offset, chunkEnd);
 
       // Send the chunk
       await this.writeFirmwareData(chunk, false);
