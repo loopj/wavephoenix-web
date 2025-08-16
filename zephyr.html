@@ -35,6 +35,12 @@
         text-decoration: none;
       }
 
+      /* Helper classes */
+      .hidden {
+        display: none !important;
+      }
+
+      /* Buttons */
       button {
         font-family: inherit;
         font-size: 1rem;
@@ -102,6 +108,7 @@
         }
       }
 
+      /* Header and Footer */
       .header-bar {
         position: fixed;
         top: 0;
@@ -124,6 +131,7 @@
         font-size: 14px;
       }
 
+      /* Cards */
       .card {
         width: 500px;
         margin: 20px auto;
@@ -139,7 +147,6 @@
         text-align: center;
       }
 
-      /* On small screens, override to 90vw */
       @media (max-width: 600px) {
         .card {
           width: 90vw;
@@ -182,37 +189,7 @@
         margin-top: 0;
       }
 
-      button.menu-item {
-        display: block;
-        width: 100%;
-        margin: 0.5em 0;
-      }
-
-      .button-menu button {
-        display: block;
-        width: 100%;
-      }
-
-      .settings-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 15px 0;
-        border-bottom: 1px solid #5b5b5b;
-      }
-
-      .settings-row:last-child {
-        border-bottom: none;
-      }
-
-      .settings-row label {
-        color: #ccc;
-        font-size: 17px;
-        flex: 1;
-        text-align: left;
-      }
-
+      /* Progress bars */
       .progress-bar {
         position: relative;
         width: 100%;
@@ -242,8 +219,36 @@
         pointer-events: none;
       }
 
-      .hidden {
-        display: none !important;
+      /* TODO: Make more generic */
+      button.menu-item {
+        display: block;
+        width: 100%;
+        margin: 0.5em 0;
+      }
+
+      .button-menu button {
+        display: block;
+        width: 100%;
+      }
+
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 15px 0;
+        border-bottom: 1px solid #5b5b5b;
+      }
+
+      .settings-row:last-child {
+        border-bottom: none;
+      }
+
+      .settings-row label {
+        color: #ccc;
+        font-size: 17px;
+        flex: 1;
+        text-align: left;
       }
     </style>
   </head>
@@ -398,6 +403,6 @@
       <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
     </div>
 
-    <script type="module" src="settings.js"></script>
+    <script type="module" src="zephyr.js"></script>
   </body>
 </html>
