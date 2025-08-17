@@ -5,9 +5,7 @@ export class FirmwarePage extends Page {
   // Button bar
   #backBtn = document.getElementById("firmware-back-btn");
   #flashBtn = document.getElementById("firmware-flash-btn");
-
-  // Error message
-  #errorMessage = document.getElementById("firmware-error");
+  #cancelBtn = document.getElementById("firmware-cancel-btn");
 
   // File selection
   #fileSelectionArea = document.getElementById("firmware-file-selection-area");
@@ -35,6 +33,7 @@ export class FirmwarePage extends Page {
     // Hook up event listeners
     this.#backBtn?.addEventListener("click", this.backButtonClicked);
     this.#flashBtn?.addEventListener("click", this.flashButtonClicked);
+    this.#cancelBtn?.addEventListener("click", this.cancelButtonClicked);
     this.#fileInput?.addEventListener("change", this.fileInputChanged);
     this.#chooseBtn?.addEventListener("click", this.chooseButtonClicked);
     this.#changeBtn?.addEventListener("click", this.changeButtonClicked);
@@ -59,8 +58,12 @@ export class FirmwarePage extends Page {
     this.#progressArea.classList.remove("hidden");
     this.#fileSelectedArea.classList.add("hidden");
 
-    // Hide flash button
+    // Hide flash and back buttons
     this.#flashBtn.classList.add("hidden");
+    this.#backBtn.classList.add("hidden");
+
+    // Show cancel button
+    this.#cancelBtn.classList.remove("hidden");
 
     // Start the DFU process
     const file = this.#fileInput.files[0];
@@ -79,9 +82,12 @@ export class FirmwarePage extends Page {
   };
 
   backButtonClicked = () => {
-    this.client.cancelDFU();
-
     showPage("menu");
+  };
+
+  cancelButtonClicked = () => {
+    this.client.cancelDFU();
+    this.onShow();
   };
 
   fileInputChanged = async (event) => {
@@ -132,7 +138,9 @@ export class FirmwarePage extends Page {
     this.#progressBarFill.style.width = "0%";
     this.#progressBarText.textContent = "0%";
 
-    // Hide the flash button
+    // Reset button states
+    this.#backBtn.classList.remove("hidden");
     this.#flashBtn.classList.add("hidden");
+    this.#cancelBtn.classList.add("hidden");
   }
 }
