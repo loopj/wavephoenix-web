@@ -69,12 +69,10 @@ export class Management {
   #disconnectCallback = null;
 
   async connect() {
-    if (!this.#device) {
-      this.#device = await navigator.bluetooth.requestDevice({
-        filters: [{ name: "WavePhoenix" }],
-        optionalServices: [MANAGEMENT_SERVICE_UUID],
-      });
-    }
+    this.#device = await navigator.bluetooth.requestDevice({
+      filters: [{ name: "WavePhoenix" }],
+      optionalServices: [MANAGEMENT_SERVICE_UUID],
+    });
 
     const server = await this.#device.gatt.connect();
     const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);

@@ -2,6 +2,8 @@ import { FirmwareImage } from "../management.js";
 import { Page, showPage } from "../page.js";
 
 export class FirmwarePage extends Page {
+  #page = document.getElementById("firmware-page");
+
   // Button bar
   #backBtn = document.getElementById("firmware-back-btn");
   #flashBtn = document.getElementById("firmware-flash-btn");
@@ -37,6 +39,10 @@ export class FirmwarePage extends Page {
     this.#fileInput?.addEventListener("change", this.fileInputChanged);
     this.#chooseBtn?.addEventListener("click", this.chooseButtonClicked);
     this.#changeBtn?.addEventListener("click", this.changeButtonClicked);
+    this.#page?.addEventListener("dragenter", this.pageDragEnter);
+    this.#page?.addEventListener("dragover", (e) => e.preventDefault());
+    this.#page?.addEventListener("dragleave", this.pageDragLeave);
+    this.#page?.addEventListener("drop", this.pageDropped);
   }
 
   chooseButtonClicked = () => {
@@ -124,13 +130,32 @@ export class FirmwarePage extends Page {
     }
   };
 
+  pageDragEnter = (event) => {
+    event.preventDefault();
+    this.#page.classList.add("dragging");
+  };
+
+  pageDragLeave = (event) => {
+    this.#page.classList.remove("dragging");
+  };
+
+  pageDropped = (event) => {
+    event.preventDefault();
+    this.#page.classList.remove("dragging");
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      this.#fileInput.files = event.dataTransfer.files;
+      this.fileInputChanged();
+    }
+  };
+
   onShow() {
     // Reset the file input
     this.#fileInput.value = "";
 
     // Show only the file selection area
     this.#fileSelectionArea.classList.remove("hidden");
-    this.#fileSelectionInfo.textContent = "Select a firmware file to update your device.";
+    this.#fileSelectionInfo.textContent = "Select or drag a firmware file to update your device.";
     this.#fileSelectedArea.classList.add("hidden");
     this.#progressArea.classList.add("hidden");
 

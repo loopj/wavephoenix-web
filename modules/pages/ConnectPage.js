@@ -30,7 +30,7 @@ export class ConnectPage extends Page {
       if (e.name === "NotFoundError") {
         console.debug("User cancelled Bluetooth device selection");
       } else {
-        console.error("Bluetooth connection failed");
+        console.error("Bluetooth connection failed", e);
       }
     } finally {
       // Hide loading state
