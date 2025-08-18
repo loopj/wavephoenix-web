@@ -1,7 +1,8 @@
-import { COMMANDS } from "../management.js";
+import { COMMANDS, versionString } from "../management.js";
 import { Page, showPage } from "../page.js";
 
 export class MenuPage extends Page {
+  #firmwareVersion = document.getElementById("menu-firmware-version");
   #settingsBtn = document.getElementById("menu-settings-btn");
   #firmwareBtn = document.getElementById("menu-firmware-btn");
   #exitBtn = document.getElementById("menu-exit-btn");
@@ -39,5 +40,11 @@ export class MenuPage extends Page {
       // Bluetooth, so let's ignore GATT errors
       console.debug("Error during exit:", err);
     }
+  };
+
+  onShow = async () => {
+    this.#firmwareVersion.textContent = `Current firmware version: ${versionString(
+      this.client.getVersion()
+    )}`;
   };
 }

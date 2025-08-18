@@ -1,4 +1,4 @@
-import { FirmwareImage } from "../management.js";
+import { FirmwareImage, versionString } from "../management.js";
 import { Page, showPage } from "../page.js";
 
 export class FirmwarePage extends Page {
@@ -118,7 +118,7 @@ export class FirmwarePage extends Page {
       this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected.`;
     } else {
       // Show the selected firmware information
-      const version = firmwareImage.getVersionString();
+      const version = versionString(firmwareImage.getVersion());
       this.#fileSelectedInfo.textContent = `WavePhoenix firmware found, version ${version}`;
 
       // Toggle the "firmware selected" area

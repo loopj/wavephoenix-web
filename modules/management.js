@@ -2,6 +2,7 @@ const MANAGEMENT_SERVICE_UUID = 0x5750;
 const SETTINGS_CHAR_UUID = 0x5751;
 const COMMANDS_CHAR_UUID = 0x5752;
 const FIRMWARE_DATA_CHAR_UUID = 0x5753;
+const VERSION_UUID = 0x5754;
 
 export const COMMANDS = {
   REBOOT: 0x00,
@@ -19,6 +20,14 @@ export const SETTINGS = {
   PIN_WIRELESS_ID: 0x02,
   PAIRING_BUTTONS: 0x03,
 };
+
+export function versionString(version) {
+  let versionString = `${version.major}.${version.minor}.${version.patch}`;
+  if (version.tweak !== 0) {
+    versionString += ` (${version.tweak})`;
+  }
+  return versionString;
+}
 
 export class FirmwareImage {
   // MCUboot header
@@ -40,14 +49,9 @@ export class FirmwareImage {
     return {
       major: this.dataView.getUint8(20),
       minor: this.dataView.getUint8(21),
-      revision: this.dataView.getUint16(22, true),
-      buildNum: this.dataView.getUint32(24, true),
+      patch: this.dataView.getUint16(22, true),
+      tweak: this.dataView.getUint32(24, true),
     };
-  }
-
-  getVersionString() {
-    const version = this.getVersion();
-    return `${version.major}.${version.minor}.${version.revision}`;
   }
 
   getSize() {
@@ -66,6 +70,8 @@ export class Management {
   #settingsChar = null;
   #commandsChar = null;
   #firmwareDataChar = null;
+  #versionChar = null;
+  #version = null;
   #disconnectCallback = null;
 
   async connect() {
@@ -74,11 +80,18 @@ export class Management {
       optionalServices: [MANAGEMENT_SERVICE_UUID],
     });
 
+    // Connect to the gatt server
     const server = await this.#device.gatt.connect();
+
+    // Set up characteristics
     const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
     this.#settingsChar = await service.getCharacteristic(SETTINGS_CHAR_UUID);
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
+    this.#versionChar = await service.getCharacteristic(VERSION_UUID);
+
+    // Pre-fetch version
+    this.#version = await this.readVersion();
 
     this.#device.addEventListener("gattserverdisconnected", this.#disconnectCallback);
   }
@@ -108,6 +121,21 @@ export class Management {
     } else {
       await this.#firmwareDataChar.writeValueWithoutResponse(data);
     }
+  }
+
+  async readVersion() {
+    const version = await this.#versionChar.readValue();
+
+    return {
+      major: version.getUint8(3),
+      minor: version.getUint8(2),
+      patch: version.getUint8(1),
+      tweak: version.getUint8(0),
+    };
+  }
+
+  getVersion() {
+    return this.#version;
   }
 
   async startDFU(firmwareImage, onProgress) {
