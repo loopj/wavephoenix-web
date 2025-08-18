@@ -1,5 +1,3 @@
-const CONNECT_TIMEOUT = 5000;
-
 const MANAGEMENT_SERVICE_UUID = 0x5750;
 const SETTINGS_CHAR_UUID = 0x5751;
 const COMMANDS_CHAR_UUID = 0x5752;
@@ -68,7 +66,6 @@ export class FirmwareImage {
 export class TimeoutError extends Error {}
 
 export class Management {
-  #dfuActive = false;
   #dfuCancelled = false;
   #device = null;
   #settingsChar = null;
@@ -78,20 +75,24 @@ export class Management {
   #version = null;
   #disconnectCallback = null;
 
-  async connect() {
+  async connect(timeout = 5000) {
     // Prompt user to select a Bluetooth device
     if (!this.#device) {
       this.#device = await navigator.bluetooth.requestDevice({
         filters: [{ name: "WavePhoenix" }],
         optionalServices: [MANAGEMENT_SERVICE_UUID],
       });
+
+      this.#device.addEventListener("gattserverdisconnected", this.gattServerDisconnected);
     }
 
     // Connect to the gatt server
     const server = await Promise.race([
       this.#device.gatt.connect(),
-      new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), CONNECT_TIMEOUT)),
+      new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), timeout)),
     ]);
+
+    console.log("Bluetooth device connected");
 
     // Set up characteristics
     const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
@@ -100,14 +101,43 @@ export class Management {
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
     this.#versionChar = await service.getCharacteristic(VERSION_UUID);
 
-    // Pre-fetch version
-    this.#version = await this.readVersion();
-
-    this.#device.addEventListener("gattserverdisconnected", this.#disconnectCallback);
+    // Pre-fetch current firmware version
+    await this.fetchVersion();
   }
 
-  onDisconnect(callback) {
+  async disconnect() {
+    if (this.#device) {
+      this.#device.gatt.disconnect();
+    }
+  }
+
+  clearDevice() {
+    this.#device = null;
+  }
+
+  get connected() {
+    return this.#device?.gatt.connected ?? false;
+  }
+
+  async fetchVersion() {
+    const version = await this.#versionChar.readValue();
+    this.#version = {
+      major: version.getUint8(3),
+      minor: version.getUint8(2),
+      patch: version.getUint8(1),
+      tweak: version.getUint8(0),
+    };
+  }
+
+  gattServerDisconnected = () => {
+    console.log("Bluetooth device disconnected");
+    this.#disconnectCallback?.();
+  };
+
+  setDisconnectCallback(callback) {
+    const prevCallback = this.#disconnectCallback;
     this.#disconnectCallback = callback;
+    return prevCallback;
   }
 
   async sendCommand(commandCode) {
@@ -125,40 +155,29 @@ export class Management {
     await this.#settingsChar.writeValue(buf);
   }
 
-  async writeFirmwareData(data, withResponse = false) {
+  async writeFirmwareChunk(data, withResponse = false) {
     if (withResponse) {
       await this.#firmwareDataChar.writeValueWithResponse(data);
     } else {
       await this.#firmwareDataChar.writeValueWithoutResponse(data);
+      await this._delay(10);
     }
-  }
-
-  async readVersion() {
-    const version = await this.#versionChar.readValue();
-
-    return {
-      major: version.getUint8(3),
-      minor: version.getUint8(2),
-      patch: version.getUint8(1),
-      tweak: version.getUint8(0),
-    };
   }
 
   getVersion() {
     return this.#version;
   }
 
-  async startDFU(firmwareImage, onProgress) {
+  async writeFirmware(firmwareImage, onProgress, reliable = false) {
     const CHUNK_SIZE = 64;
     this.#dfuCancelled = false;
-    this.#dfuActive = true;
 
     let offset = 0;
     if (onProgress) onProgress(0);
 
     // Step 1: Send DFU_BEGIN command
     await this.sendCommand(COMMANDS.BEGIN_DFU);
-    await this._delay(100);
+    // await this._delay(100);
 
     // Step 2: Send firmware data in chunks
     while (offset < firmwareImage.data.length) {
@@ -170,29 +189,23 @@ export class Management {
       const chunk = firmwareImage.data.slice(offset, chunkEnd);
 
       // Send the chunk
-      await this.writeFirmwareData(chunk, false);
-      await this._delay(10);
+      await this.writeFirmwareChunk(chunk, reliable);
       offset = chunkEnd;
 
       // Update progress
-      if (onProgress) onProgress(Math.round((offset / firmwareImage.data.length) * 100));
+      if (onProgress) {
+        const progress = Math.min(Math.round((offset / firmwareImage.data.length) * 100), 99);
+        onProgress(progress);
+      }
     }
+  }
 
-    // Step 3: Send DFU_APPLY command
-    await this._delay(500);
+  async applyFirmware() {
     await this.sendCommand(COMMANDS.APPLY_DFU);
-    await this._delay(500);
-
-    // Make sure progress bars get to 100%
-    if (onProgress) onProgress(100);
-    this.#dfuActive = false;
   }
 
   cancelDFU() {
-    if (!this.#dfuActive) return;
-
     this.#dfuCancelled = true;
-    this.#dfuActive = false;
 
     console.log("DFU cancelled by user");
   }

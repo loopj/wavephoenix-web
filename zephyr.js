@@ -8,9 +8,9 @@ import { SettingsPage } from "./modules/pages/SettingsPage.js";
 
 // Create the management client
 const client = new Management();
-client.onDisconnect(() => {
-  // TODO: Show "Device disconnected" error status
+client.setDisconnectCallback(() => {
   showPage("connect");
+  client.clearDevice();
 });
 
 // Create the pages
