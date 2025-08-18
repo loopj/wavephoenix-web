@@ -1,3 +1,5 @@
+const CONNECT_TIMEOUT = 5000;
+
 const MANAGEMENT_SERVICE_UUID = 0x5750;
 const SETTINGS_CHAR_UUID = 0x5751;
 const COMMANDS_CHAR_UUID = 0x5752;
@@ -63,6 +65,8 @@ export class FirmwareImage {
   }
 }
 
+export class TimeoutError extends Error {}
+
 export class Management {
   #dfuActive = false;
   #dfuCancelled = false;
@@ -75,13 +79,19 @@ export class Management {
   #disconnectCallback = null;
 
   async connect() {
-    this.#device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: "WavePhoenix" }],
-      optionalServices: [MANAGEMENT_SERVICE_UUID],
-    });
+    // Prompt user to select a Bluetooth device
+    if (!this.#device) {
+      this.#device = await navigator.bluetooth.requestDevice({
+        filters: [{ name: "WavePhoenix" }],
+        optionalServices: [MANAGEMENT_SERVICE_UUID],
+      });
+    }
 
     // Connect to the gatt server
-    const server = await this.#device.gatt.connect();
+    const server = await Promise.race([
+      this.#device.gatt.connect(),
+      new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), CONNECT_TIMEOUT)),
+    ]);
 
     // Set up characteristics
     const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);

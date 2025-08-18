@@ -1,7 +1,9 @@
+import { TimeoutError } from "../management.js";
 import { Page, showPage } from "../page.js";
 
 export class ConnectPage extends Page {
   #connectBtn = document.getElementById("connect-btn");
+  #connectError = document.getElementById("connect-error");
 
   constructor(client) {
     // Register the page
@@ -15,11 +17,11 @@ export class ConnectPage extends Page {
   }
 
   connectButtonClicked = async () => {
-    try {
-      // Show loading state
-      this.#connectBtn.classList.add("loading");
-      this.#connectBtn.disabled = true;
+    // Show loading state
+    this.#connectBtn.classList.add("loading");
+    this.#connectBtn.disabled = true;
 
+    try {
       // Attempt to connect the client
       await this.client.connect();
 
@@ -29,13 +31,23 @@ export class ConnectPage extends Page {
       // Handle error
       if (e.name === "NotFoundError") {
         console.debug("User cancelled Bluetooth device selection");
+      } else if (e instanceof TimeoutError) {
+        this.#connectError.textContent = "Connection timed out. Please try again.";
+        this.#connectError.classList.remove("hidden");
       } else {
+        this.#connectError.textContent = "Bluetooth connection failed. Please try again.";
+        this.#connectError.classList.remove("hidden");
+
         console.error("Bluetooth connection failed", e);
       }
-    } finally {
-      // Hide loading state
-      this.#connectBtn.classList.remove("loading");
-      this.#connectBtn.disabled = false;
     }
+
+    // Hide loading state
+    this.#connectBtn.classList.remove("loading");
+    this.#connectBtn.disabled = false;
+  };
+
+  onShow = () => {
+    this.#connectError.classList.add("hidden");
   };
 }
