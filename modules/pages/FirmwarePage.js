@@ -1,4 +1,4 @@
-import { FirmwareImage, TimeoutError, versionString } from "../management.js";
+import { FirmwareImage, TimeoutError, versionString } from "../Client.js";
 import { Page, showPage } from "../page.js";
 
 export class FirmwarePage extends Page {

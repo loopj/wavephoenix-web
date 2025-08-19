@@ -1,4 +1,4 @@
-import { COMMANDS, versionString } from "../management.js";
+import { COMMANDS, versionString } from "../Client.js";
 import { Page, showPage } from "../page.js";
 
 export class MenuPage extends Page {

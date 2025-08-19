@@ -1,4 +1,4 @@
-import { Management } from "./modules/management.js";
+import { Client } from "./modules/Client.js";
 import { registerPage, showPage } from "./modules/page.js";
 import { ConnectPage } from "./modules/pages/ConnectPage.js";
 import { FirmwarePage } from "./modules/pages/FirmwarePage.js";
@@ -7,7 +7,7 @@ import { NotSupportedPage } from "./modules/pages/NotSupportedPage.js";
 import { SettingsPage } from "./modules/pages/SettingsPage.js";
 
 // Create the management client
-const client = new Management();
+const client = new Client();
 client.setDisconnectCallback(() => {
   showPage("connect");
   client.clearDevice();

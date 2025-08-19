@@ -1,4 +1,4 @@
-import { SETTINGS } from "../management.js";
+import { SETTINGS } from "../Client.js";
 import { Page, showPage } from "../page.js";
 
 export class SettingsPage extends Page {

@@ -1,4 +1,4 @@
-import { TimeoutError } from "../management.js";
+import { TimeoutError } from "../Client.js";
 import { Page, showPage } from "../page.js";
 
 export class ConnectPage extends Page {

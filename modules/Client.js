@@ -65,7 +65,7 @@ export class FirmwareImage {
 
 export class TimeoutError extends Error {}
 
-export class Management {
+export class Client {
   #dfuCancelled = false;
   #device = null;
   #settingsChar = null;
