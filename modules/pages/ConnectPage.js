@@ -13,7 +13,7 @@ export class ConnectPage extends Page {
     this.client = client;
 
     // Hook up event listeners
-    this.#connectBtn?.addEventListener("click", this.connectButtonClicked);
+    this.#connectBtn.addEventListener("click", this.connectButtonClicked);
   }
 
   connectButtonClicked = async () => {

@@ -37,16 +37,16 @@ export class FirmwarePage extends Page {
     this.client = client;
 
     // Hook up event listeners
-    this.#backBtn?.addEventListener("click", this.backButtonClicked);
-    this.#flashBtn?.addEventListener("click", this.flashButtonClicked);
-    this.#cancelBtn?.addEventListener("click", this.cancelButtonClicked);
-    this.#fileInput?.addEventListener("change", this.fileInputChanged);
-    this.#chooseBtn?.addEventListener("click", this.chooseButtonClicked);
-    this.#changeBtn?.addEventListener("click", this.changeButtonClicked);
-    this.#page?.addEventListener("dragenter", this.pageDragEnter);
-    this.#page?.addEventListener("dragover", (e) => e.preventDefault());
-    this.#page?.addEventListener("dragleave", this.pageDragLeave);
-    this.#page?.addEventListener("drop", this.pageDropped);
+    this.#backBtn.addEventListener("click", this.backButtonClicked);
+    this.#flashBtn.addEventListener("click", this.flashButtonClicked);
+    this.#cancelBtn.addEventListener("click", this.cancelButtonClicked);
+    this.#fileInput.addEventListener("change", this.fileInputChanged);
+    this.#chooseBtn.addEventListener("click", this.chooseButtonClicked);
+    this.#changeBtn.addEventListener("click", this.changeButtonClicked);
+    this.#page.addEventListener("dragenter", this.pageDragEnter);
+    this.#page.addEventListener("dragover", (e) => e.preventDefault());
+    this.#page.addEventListener("dragleave", this.pageDragLeave);
+    this.#page.addEventListener("drop", this.pageDropped);
   }
 
   chooseButtonClicked = () => {

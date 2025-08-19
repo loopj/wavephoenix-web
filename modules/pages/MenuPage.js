@@ -15,9 +15,9 @@ export class MenuPage extends Page {
     this.client = client;
 
     // Hook up event listeners
-    this.#settingsBtn?.addEventListener("click", this.settingsButtonClicked);
-    this.#firmwareBtn?.addEventListener("click", this.firmwareButtonClicked);
-    this.#exitBtn?.addEventListener("click", this.exitButtonClicked);
+    this.#settingsBtn.addEventListener("click", this.settingsButtonClicked);
+    this.#firmwareBtn.addEventListener("click", this.firmwareButtonClicked);
+    this.#exitBtn.addEventListener("click", this.exitButtonClicked);
   }
 
   settingsButtonClicked = async () => {

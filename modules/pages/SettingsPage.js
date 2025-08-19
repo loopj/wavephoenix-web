@@ -1,4 +1,3 @@
-import { SETTINGS } from "../Client.js";
 import { Page, showPage } from "../page.js";
 
 export class SettingsPage extends Page {
@@ -17,43 +16,34 @@ export class SettingsPage extends Page {
     this.client = client;
 
     // Hook up event listeners
-    this.#backBtn?.addEventListener("click", this.backButtonClicked);
-    this.#wirelessChannel?.addEventListener("change", this.wirelessChannelChanged);
-    this.#controllerType?.addEventListener("change", this.controllerTypeChanged);
-    this.#pinWirelessId?.addEventListener("change", this.wirelessIdChanged);
-    this.#pairingButtons?.addEventListener("change", this.pairingButtonsChanged);
+    this.#backBtn.addEventListener("click", this.backButtonClicked);
+    this.#wirelessChannel.addEventListener("change", this.wirelessChannelChanged);
+    this.#controllerType.addEventListener("change", this.controllerTypeChanged);
+    this.#pinWirelessId.addEventListener("change", this.wirelessIdChanged);
+    this.#pairingButtons.addEventListener("change", this.pairingButtonsChanged);
   }
 
   wirelessChannelChanged = async () => {
     const channel = parseInt(this.#wirelessChannel.value, 10);
-    try {
-      await this.client.writeSetting(SETTINGS.WIRELESS_CHANNEL, [channel]);
-    } catch (err) {
-      console.error("Failed to update wireless channel setting:", err);
-    }
+    await this.client.setWirelessChannel(channel);
   };
 
   controllerTypeChanged = async () => {
     const type = parseInt(this.#controllerType.value, 10);
-    try {
-      await this.client.writeSetting(SETTINGS.CONTROLLER_TYPE, [type]);
-    } catch (err) {
-      console.error("Failed to update controller type setting:", err);
-    }
+    await this.client.setControllerType(type);
   };
 
   wirelessIdChanged = async () => {
-    const isEnabled = this.#pinWirelessId?.checked;
-    try {
-      // Update the setting on the device
-      await this.client.writeSetting(SETTINGS.PIN_WIRELESS_ID, [isEnabled]);
-    } catch (err) {
-      console.error("Failed to update wireless ID pinning setting:", err);
-    }
+    const isEnabled = this.#pinWirelessId.checked;
+    await this.client.setPinWirelessId(isEnabled);
   };
 
   pairingButtonsChanged = async () => {
-    console.log("TODO: Pairing buttons changed");
+    const bitfield = Array.from(this.#pairingButtons.selectedOptions)
+      .map((option) => parseInt(option.value, 10))
+      .reduce((acc, value) => acc | (1 << value), 0);
+
+    await this.client.setPairingButtons(bitfield);
   };
 
   backButtonClicked = () => {
