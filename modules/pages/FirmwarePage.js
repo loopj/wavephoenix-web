@@ -1,4 +1,5 @@
-import { MCUbootImage, TimeoutError, versionString } from "../Client.js";
+import { TimeoutError, versionString } from "../Client.js";
+import { MCUbootImage } from "../MCUbootImage.js";
 import { Page, showPage } from "../page.js";
 
 const DFU_CHUNK_SIZE = 64;
@@ -111,21 +112,21 @@ export class FirmwarePage extends Page {
     const firmwareImage = new MCUbootImage(await file.arrayBuffer());
 
     // Check if the firmware image is valid
-    if (!firmwareImage.checkMagicNumber()) {
-      // Show the error
+    if (!firmwareImage.isValid()) {
       this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected.`;
-    } else {
-      // Show the selected firmware information
-      const version = versionString(firmwareImage.getVersion());
-      this.#fileSelectedInfo.textContent = `WavePhoenix firmware found, version ${version}`;
-
-      // Toggle the "firmware selected" area
-      this.#fileSelectionArea.classList.add("hidden");
-      this.#fileSelectedArea.classList.remove("hidden");
-
-      // Show the flash button
-      this.#flashBtn.classList.remove("hidden");
+      return;
     }
+
+    // Show the selected firmware information
+    const version = versionString(firmwareImage.getVersion());
+    this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${version}`;
+
+    // Toggle the "firmware selected" area
+    this.#fileSelectionArea.classList.add("hidden");
+    this.#fileSelectedArea.classList.remove("hidden");
+
+    // Show the flash button
+    this.#flashBtn.classList.remove("hidden");
   };
 
   flashButtonClicked = async () => {

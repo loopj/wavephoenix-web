@@ -1,4 +1,4 @@
-import { COMMANDS, versionString } from "../Client.js";
+import { versionString } from "../Client.js";
 import { Page, showPage } from "../page.js";
 
 export class MenuPage extends Page {
@@ -31,7 +31,7 @@ export class MenuPage extends Page {
   exitButtonClicked = async () => {
     try {
       // Tell the device to leave management mode
-      await this.client.sendCommand(COMMANDS.LEAVE_SETTINGS);
+      await this.client.leaveSettings();
 
       // Show the connect page
       showPage("connect");

@@ -1,10 +1,10 @@
-const MANAGEMENT_SERVICE_UUID = 0x5750;
+const SERVICE_UUID = 0x5750;
 const SETTINGS_CHAR_UUID = 0x5751;
 const COMMANDS_CHAR_UUID = 0x5752;
 const FIRMWARE_DATA_CHAR_UUID = 0x5753;
 const VERSION_UUID = 0x5754;
 
-export const COMMANDS = {
+const COMMANDS = {
   REBOOT: 0x00,
   ENTER_SETTINGS: 0x01,
   LEAVE_SETTINGS: 0x02,
@@ -14,7 +14,7 @@ export const COMMANDS = {
   APPLY_DFU: 0x06,
 };
 
-export const SETTINGS = {
+const SETTINGS = {
   WIRELESS_CHANNEL: 0x00,
   CONTROLLER_TYPE: 0x01,
   PIN_WIRELESS_ID: 0x02,
@@ -26,49 +26,10 @@ export class UserCancelledError extends Error {}
 
 export function versionString(version) {
   let versionString = `${version.major}.${version.minor}.${version.patch}`;
-  if (version.tweak !== 0) {
-    versionString += ` (${version.tweak})`;
+  if (version.build !== 0) {
+    versionString += `+${version.build}`;
   }
   return versionString;
-}
-
-export class MCUbootImage {
-  static MAGIC = 0x96f3b83d;
-
-  constructor(arrayBuffer) {
-    this.data = new Uint8Array(arrayBuffer);
-    this.dataView = new DataView(arrayBuffer);
-  }
-
-  getMagicNumber() {
-    return this.dataView.getUint32(0, true);
-  }
-
-  checkMagicNumber() {
-    return this.getMagicNumber() === MCUbootImage.MAGIC;
-  }
-
-  getVersion() {
-    // Version fields at offsets 20, 21, 22, 24 (see mcuboot.js)
-    return {
-      major: this.dataView.getUint8(20),
-      minor: this.dataView.getUint8(21),
-      patch: this.dataView.getUint16(22, true),
-      tweak: this.dataView.getUint32(24, true),
-    };
-  }
-
-  getSize() {
-    return this.data.length;
-  }
-
-  async calculateSHA256() {
-    return await crypto.subtle.digest("SHA-256", this.data);
-  }
-}
-
-function delay(ms) {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 export class Client {
@@ -88,7 +49,7 @@ export class Client {
     if (!this.#device) {
       this.#device = await navigator.bluetooth.requestDevice({
         filters: [{ name: "WavePhoenix" }],
-        optionalServices: [MANAGEMENT_SERVICE_UUID],
+        optionalServices: [SERVICE_UUID],
       });
 
       this.#device.addEventListener("gattserverdisconnected", this.gattServerDisconnected);
@@ -103,7 +64,7 @@ export class Client {
     console.log(`Bluetooth device '${this.#device.name}' connected, id=${this.#device.id}`);
 
     // Set up characteristics
-    const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
+    const service = await server.getPrimaryService(SERVICE_UUID);
     this.#settingsChar = await service.getCharacteristic(SETTINGS_CHAR_UUID);
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
@@ -152,6 +113,10 @@ export class Client {
 
   async applyDFU() {
     await this.sendCommand(COMMANDS.APPLY_DFU);
+  }
+
+  async leaveSettings() {
+    await this.sendCommand(COMMANDS.LEAVE_SETTINGS);
   }
 
   //
@@ -214,7 +179,7 @@ export class Client {
       await this.#firmwareDataChar.writeValueWithResponse(data);
     } else {
       await this.#firmwareDataChar.writeValueWithoutResponse(data);
-      await delay(wait);
+      await new Promise((r) => setTimeout(r, wait));
     }
   }
 
@@ -228,7 +193,7 @@ export class Client {
       major: version.getUint8(3),
       minor: version.getUint8(2),
       patch: version.getUint8(1),
-      tweak: version.getUint8(0),
+      build: version.getUint8(0),
     };
   }
 
