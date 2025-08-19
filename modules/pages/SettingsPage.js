@@ -61,20 +61,11 @@ export class SettingsPage extends Page {
   };
 
   async fetchSettings() {
-    const wirelessChannelBytes = await this.client.readSetting(SETTINGS.WIRELESS_CHANNEL);
-    const wirelessChannel = wirelessChannelBytes.getUint8(0);
-    this.#wirelessChannel.value = wirelessChannel;
+    this.#wirelessChannel.value = await this.client.getWirelessChannel();
+    this.#controllerType.value = await this.client.getControllerType();
+    this.#pinWirelessId.checked = await this.client.getPinWirelessId();
 
-    const controllerTypeBytes = await this.client.readSetting(SETTINGS.CONTROLLER_TYPE);
-    const controllerType = controllerTypeBytes.getUint8(0);
-    this.#controllerType.value = controllerType;
-
-    const pinWirelessIdBytes = await this.client.readSetting(SETTINGS.PIN_WIRELESS_ID);
-    const pinWirelessId = pinWirelessIdBytes.getUint8(0) === 1;
-    this.#pinWirelessId.checked = pinWirelessId;
-
-    const pairingButtonsBytes = await this.client.readSetting(SETTINGS.PAIRING_BUTTONS);
-    const pairingButtons = pairingButtonsBytes.getUint16(0, true);
+    const pairingButtons = await this.client.getPairingButtons();
     for (let i = 0; i < this.#pairingButtons.options.length; i++) {
       const option = this.#pairingButtons.options[i];
       option.selected = (pairingButtons & (1 << i)) !== 0;

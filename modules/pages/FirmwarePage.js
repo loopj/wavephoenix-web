@@ -1,5 +1,7 @@
-import { FirmwareImage, TimeoutError, versionString } from "../Client.js";
+import { MCUbootImage, TimeoutError, versionString } from "../Client.js";
 import { Page, showPage } from "../page.js";
+
+const DFU_CHUNK_SIZE = 64;
 
 export class FirmwarePage extends Page {
   #page = document.getElementById("firmware-page");
@@ -25,6 +27,7 @@ export class FirmwarePage extends Page {
   #progressInfo = document.getElementById("firmware-progress-info");
   #progressBarFill = document.querySelector("#firmware-progress-bar .progress-bar-fill");
   #progressBarText = document.querySelector("#firmware-progress-bar .progress-bar-text");
+  #abortUpload = false;
 
   constructor(client) {
     // Register the page
@@ -63,7 +66,7 @@ export class FirmwarePage extends Page {
   };
 
   cancelButtonClicked = () => {
-    this.client.cancelDFU();
+    this.#abortUpload = true;
     this.onShow();
   };
 
@@ -88,7 +91,7 @@ export class FirmwarePage extends Page {
 
   setProgress = (percent) => {
     this.#progressBarFill.style.width = percent + "%";
-    this.#progressBarText.textContent = percent + "%";
+    this.#progressBarText.textContent = Math.round(percent) + "%";
   };
 
   fileInputChanged = async (event) => {
@@ -105,7 +108,7 @@ export class FirmwarePage extends Page {
 
     // Parse the firmware image
     const file = this.#fileInput.files[0];
-    const firmwareImage = new FirmwareImage(await file.arrayBuffer());
+    const firmwareImage = new MCUbootImage(await file.arrayBuffer());
 
     // Check if the firmware image is valid
     if (!firmwareImage.checkMagicNumber()) {
@@ -143,12 +146,30 @@ export class FirmwarePage extends Page {
     // Show cancel button
     this.#cancelBtn.classList.remove("hidden");
 
+    // Reset abort flag
+    this.#abortUpload = false;
+
     // Start the DFU process
     const file = this.#fileInput.files[0];
-    const firmwareImage = new FirmwareImage(await file.arrayBuffer());
+    const buffer = await file.arrayBuffer();
 
     try {
-      await this.client.writeFirmware(firmwareImage, this.setProgress);
+      // Step 1: Send DFU_BEGIN command
+      await this.client.beginDFU();
+
+      // Step 2: Send firmware data in chunks
+      const total = buffer.byteLength;
+      for (let start = 0; start < total; start += DFU_CHUNK_SIZE) {
+        // Check for cancellation
+        if (this.#abortUpload) return;
+
+        // Write the next chunk
+        const chunk = buffer.slice(start, start + DFU_CHUNK_SIZE);
+        await this.client.writeFirmware(chunk, { withResponse: false });
+
+        // Update progress
+        this.setProgress(Math.min((start / total) * 100, 99));
+      }
     } catch (error) {
       await this.updateComplete(false);
       console.error("Firmware update failed:", error);
@@ -161,8 +182,8 @@ export class FirmwarePage extends Page {
       await this.reconnect();
     });
 
-    // Apply the firmware update
-    await this.client.applyFirmware();
+    // Step 3: Apply the firmware update
+    await this.client.applyDFU();
   };
 
   async reconnect() {

@@ -38,13 +38,12 @@ export class MenuPage extends Page {
     } catch (err) {
       // Exiting management mode on the device immediately disables
       // Bluetooth, so let's ignore GATT errors
-      console.debug("Error during exit:", err);
     }
   };
 
-  onShow = async () => {
+  onShow() {
     this.#firmwareVersion.textContent = `Current firmware version: ${versionString(
       this.client.getVersion()
     )}`;
-  };
+  }
 }

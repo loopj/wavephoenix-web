@@ -21,6 +21,9 @@ export const SETTINGS = {
   PAIRING_BUTTONS: 0x03,
 };
 
+export class TimeoutError extends Error {}
+export class UserCancelledError extends Error {}
+
 export function versionString(version) {
   let versionString = `${version.major}.${version.minor}.${version.patch}`;
   if (version.tweak !== 0) {
@@ -29,19 +32,20 @@ export function versionString(version) {
   return versionString;
 }
 
-export class FirmwareImage {
-  // MCUboot header
+export class MCUbootImage {
   static MAGIC = 0x96f3b83d;
-  static HEADER_SIZE = 32;
 
   constructor(arrayBuffer) {
     this.data = new Uint8Array(arrayBuffer);
     this.dataView = new DataView(arrayBuffer);
   }
 
+  getMagicNumber() {
+    return this.dataView.getUint32(0, true);
+  }
+
   checkMagicNumber() {
-    // Magic number is first 4 bytes, little-endian
-    return this.dataView.getUint32(0, true) === FirmwareImage.MAGIC;
+    return this.getMagicNumber() === MCUbootImage.MAGIC;
   }
 
   getVersion() {
@@ -58,22 +62,26 @@ export class FirmwareImage {
     return this.data.length;
   }
 
-  async getSHA256() {
+  async calculateSHA256() {
     return await crypto.subtle.digest("SHA-256", this.data);
   }
 }
 
-export class TimeoutError extends Error {}
+function delay(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 export class Client {
-  #dfuCancelled = false;
   #device = null;
+
+  #disconnectCallback = null;
+
   #settingsChar = null;
   #commandsChar = null;
   #firmwareDataChar = null;
   #versionChar = null;
+
   #version = null;
-  #disconnectCallback = null;
 
   async connect(timeout = 5000) {
     // Prompt user to select a Bluetooth device
@@ -92,7 +100,7 @@ export class Client {
       new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), timeout)),
     ]);
 
-    console.log("Bluetooth device connected");
+    console.log(`Bluetooth device '${this.#device.name}' connected, id=${this.#device.id}`);
 
     // Set up characteristics
     const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
@@ -119,17 +127,7 @@ export class Client {
     return this.#device?.gatt.connected ?? false;
   }
 
-  async fetchVersion() {
-    const version = await this.#versionChar.readValue();
-    this.#version = {
-      major: version.getUint8(3),
-      minor: version.getUint8(2),
-      patch: version.getUint8(1),
-      tweak: version.getUint8(0),
-    };
-  }
-
-  gattServerDisconnected = () => {
+  gattServerDisconnected = (event) => {
     console.log("Bluetooth device disconnected");
     this.#disconnectCallback?.();
   };
@@ -140,9 +138,25 @@ export class Client {
     return prevCallback;
   }
 
+  //
+  // Commands
+  //
+
   async sendCommand(commandCode) {
     await this.#commandsChar.writeValue(Uint8Array.of(commandCode));
   }
+
+  async beginDFU() {
+    await this.sendCommand(COMMANDS.BEGIN_DFU);
+  }
+
+  async applyDFU() {
+    await this.sendCommand(COMMANDS.APPLY_DFU);
+  }
+
+  //
+  // Settings
+  //
 
   async readSetting(settingCode) {
     await this.#settingsChar.writeValue(Uint8Array.of(settingCode));
@@ -155,62 +169,70 @@ export class Client {
     await this.#settingsChar.writeValue(buf);
   }
 
-  async writeFirmwareChunk(data, withResponse = false) {
+  async getWirelessChannel() {
+    const wirelessChannelBytes = await this.readSetting(SETTINGS.WIRELESS_CHANNEL);
+    return wirelessChannelBytes.getUint8(0);
+  }
+
+  async setWirelessChannel(channel) {
+    await this.writeSetting(SETTINGS.WIRELESS_CHANNEL, [channel]);
+  }
+
+  async getControllerType() {
+    const controllerTypeBytes = await this.readSetting(SETTINGS.CONTROLLER_TYPE);
+    return controllerTypeBytes.getUint8(0);
+  }
+
+  async setControllerType(type) {
+    await this.writeSetting(SETTINGS.CONTROLLER_TYPE, [type]);
+  }
+
+  async getPinWirelessId() {
+    const pinWirelessIdBytes = await this.readSetting(SETTINGS.PIN_WIRELESS_ID);
+    return pinWirelessIdBytes.getUint8(0) === 1;
+  }
+
+  async setPinWirelessId(enabled) {
+    await this.writeSetting(SETTINGS.PIN_WIRELESS_ID, [enabled ? 1 : 0]);
+  }
+
+  async getPairingButtons() {
+    const pairingButtonsBytes = await this.readSetting(SETTINGS.PAIRING_BUTTONS);
+    return pairingButtonsBytes.getUint16(0, true);
+  }
+
+  async setPairingButtons(buttons) {
+    await this.writeSetting(SETTINGS.PAIRING_BUTTONS, [buttons & 0xff, (buttons >> 8) & 0xff]);
+  }
+
+  //
+  // Firmware
+  //
+
+  async writeFirmware(data, { withResponse = false, wait = 10 } = {}) {
     if (withResponse) {
       await this.#firmwareDataChar.writeValueWithResponse(data);
     } else {
       await this.#firmwareDataChar.writeValueWithoutResponse(data);
-      await this._delay(10);
+      await delay(wait);
     }
+  }
+
+  //
+  // Version
+  //
+
+  async fetchVersion() {
+    const version = await this.#versionChar.readValue();
+    this.#version = {
+      major: version.getUint8(3),
+      minor: version.getUint8(2),
+      patch: version.getUint8(1),
+      tweak: version.getUint8(0),
+    };
   }
 
   getVersion() {
     return this.#version;
-  }
-
-  async writeFirmware(firmwareImage, onProgress, reliable = false) {
-    const CHUNK_SIZE = 64;
-    this.#dfuCancelled = false;
-
-    let offset = 0;
-    if (onProgress) onProgress(0);
-
-    // Step 1: Send DFU_BEGIN command
-    await this.sendCommand(COMMANDS.BEGIN_DFU);
-    // await this._delay(100);
-
-    // Step 2: Send firmware data in chunks
-    while (offset < firmwareImage.data.length) {
-      // Handle cancellation
-      if (this.#dfuCancelled) throw new Error("DFU cancelled by user");
-
-      // Get the next chunk
-      const chunkEnd = Math.min(offset + CHUNK_SIZE, firmwareImage.data.length);
-      const chunk = firmwareImage.data.slice(offset, chunkEnd);
-
-      // Send the chunk
-      await this.writeFirmwareChunk(chunk, reliable);
-      offset = chunkEnd;
-
-      // Update progress
-      if (onProgress) {
-        const progress = Math.min(Math.round((offset / firmwareImage.data.length) * 100), 99);
-        onProgress(progress);
-      }
-    }
-  }
-
-  async applyFirmware() {
-    await this.sendCommand(COMMANDS.APPLY_DFU);
-  }
-
-  cancelDFU() {
-    this.#dfuCancelled = true;
-
-    console.log("DFU cancelled by user");
-  }
-
-  _delay(ms) {
-    return new Promise((r) => setTimeout(r, ms));
   }
 }
