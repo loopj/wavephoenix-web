@@ -1,4 +1,4 @@
-import { MCUbootImage } from "../MCUbootImage.js";
+import { MCUbootImage } from "../images/MCUbootImage.js";
 import { TimeoutError, versionString } from "../utils.js";
 import { Page, showPage } from "./Page.js";
 

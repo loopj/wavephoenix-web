@@ -1,4 +1,4 @@
-import { withTimeout } from "./utils.js";
+import { withTimeout } from "../utils.js";
 
 export const MANAGEMENT_SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
 

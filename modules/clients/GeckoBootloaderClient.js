@@ -1,4 +1,4 @@
-import { withTimeout } from "./utils.js";
+import { withTimeout } from "../utils.js";
 
 export const GECKO_BOOTLOADER_SERVICE_UUID = "1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0";
 const OTA_CONTROL_UUID = "f7bf3564-fb6d-4e53-88a4-5e37e0326063";

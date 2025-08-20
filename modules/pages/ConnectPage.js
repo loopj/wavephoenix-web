@@ -1,6 +1,9 @@
-import { GECKO_BOOTLOADER_SERVICE_UUID, GeckoBootloaderClient } from "../GeckoBootloaderClient.js";
-import { MANAGEMENT_SERVICE_UUID, ManagementClient } from "../ManagementClient.js";
-import { MIGRATION_SERVICE_UUID } from "../MigrationClient.js";
+import {
+  GECKO_BOOTLOADER_SERVICE_UUID,
+  GeckoBootloaderClient,
+} from "../clients/GeckoBootloaderClient.js";
+import { MANAGEMENT_SERVICE_UUID, ManagementClient } from "../clients/ManagementClient.js";
+import { MIGRATION_SERVICE_UUID, MigrationClient } from "../clients/MigrationClient.js";
 import { TimeoutError } from "../utils.js";
 import { Page, showPage } from "./Page.js";
 
@@ -52,11 +55,19 @@ export class ConnectPage extends Page {
           showPage("menu");
           break;
         case MIGRATION_SERVICE_UUID:
+          // Set up a migration client
+          this.client = new MigrationClient(device);
+          await this.client.connect();
+
+          // Show the migration page
           showPage("migration");
           break;
         case GECKO_BOOTLOADER_SERVICE_UUID:
+          // Set up a Gecko bootloader client
           this.client = new GeckoBootloaderClient(device);
           await this.client.connect();
+
+          // Show the legacy firmware page
           showPage("legacy-firmware");
           break;
         default:
