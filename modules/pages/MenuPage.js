@@ -1,5 +1,5 @@
-import { versionString } from "../Client.js";
-import { Page, showPage } from "../page.js";
+import { versionString } from "../ManagementClient.js";
+import { Page, showPage } from "./Page.js";
 
 export class MenuPage extends Page {
   #firmwareVersion = document.getElementById("menu-firmware-version");
@@ -7,12 +7,9 @@ export class MenuPage extends Page {
   #firmwareBtn = document.getElementById("menu-firmware-btn");
   #exitBtn = document.getElementById("menu-exit-btn");
 
-  constructor(client) {
+  constructor(sharedState) {
     // Register the page
-    super("menu-page");
-
-    // Store the management client
-    this.client = client;
+    super("menu-page", sharedState);
 
     // Hook up event listeners
     this.#settingsBtn.addEventListener("click", this.settingsButtonClicked);

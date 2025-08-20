@@ -1,8 +1,9 @@
-const SERVICE_UUID = 0x5750;
-const SETTINGS_CHAR_UUID = 0x5751;
-const COMMANDS_CHAR_UUID = 0x5752;
-const FIRMWARE_DATA_CHAR_UUID = 0x5753;
-const VERSION_UUID = 0x5754;
+export const MANAGEMENT_SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
+
+const SETTINGS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5751);
+const COMMANDS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5752);
+const FIRMWARE_DATA_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5753);
+const VERSION_UUID = BluetoothUUID.canonicalUUID(0x5754);
 
 const COMMANDS = {
   REBOOT: 0x00,
@@ -22,7 +23,6 @@ const SETTINGS = {
 };
 
 export class TimeoutError extends Error {}
-export class UserCancelledError extends Error {}
 
 export function versionString(version) {
   let versionString = `${version.major}.${version.minor}.${version.patch}`;
@@ -32,7 +32,14 @@ export function versionString(version) {
   return versionString;
 }
 
-export class Client {
+function withTimeout(promise, timeout) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), timeout)),
+  ]);
+}
+
+export class ManagementClient {
   #device = null;
 
   #disconnectCallback = null;
@@ -44,27 +51,18 @@ export class Client {
 
   #version = null;
 
-  async connect(timeout = 5000) {
-    // Prompt user to select a Bluetooth device
-    if (!this.#device) {
-      this.#device = await navigator.bluetooth.requestDevice({
-        filters: [{ name: "WavePhoenix" }],
-        optionalServices: [SERVICE_UUID],
-      });
+  constructor(device) {
+    this.#device = device;
+    this.#device.addEventListener("gattserverdisconnected", this.gattServerDisconnected);
+  }
 
-      this.#device.addEventListener("gattserverdisconnected", this.gattServerDisconnected);
-    }
-
-    // Connect to the gatt server
-    const server = await Promise.race([
-      this.#device.gatt.connect(),
-      new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), timeout)),
-    ]);
-
-    console.log(`Bluetooth device '${this.#device.name}' connected, id=${this.#device.id}`);
+  async connect({ timeout = 15000 } = {}) {
+    // Connect to the GATT server
+    await withTimeout(this.#device.gatt.connect(), timeout);
 
     // Set up characteristics
-    const service = await server.getPrimaryService(SERVICE_UUID);
+    const server = this.#device.gatt;
+    const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
     this.#settingsChar = await service.getCharacteristic(SETTINGS_CHAR_UUID);
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
@@ -75,21 +73,14 @@ export class Client {
   }
 
   async disconnect() {
-    if (this.#device) {
-      this.#device.gatt.disconnect();
-    }
-  }
-
-  clearDevice() {
-    this.#device = null;
+    this.#device.gatt.disconnect();
   }
 
   get connected() {
-    return this.#device?.gatt.connected ?? false;
+    return this.#device.gatt.connected ?? false;
   }
 
   gattServerDisconnected = (event) => {
-    console.log("Bluetooth device disconnected");
     this.#disconnectCallback?.();
   };
 

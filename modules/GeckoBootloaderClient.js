@@ -1,0 +1,1 @@
+export const GECKO_BOOTLOADER_SERVICE_UUID = "1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0";

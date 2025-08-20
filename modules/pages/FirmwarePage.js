@@ -1,6 +1,6 @@
-import { TimeoutError, versionString } from "../Client.js";
+import { TimeoutError, versionString } from "../ManagementClient.js";
 import { MCUbootImage } from "../MCUbootImage.js";
-import { Page, showPage } from "../page.js";
+import { Page, showPage } from "./Page.js";
 
 const DFU_CHUNK_SIZE = 64;
 
@@ -30,12 +30,9 @@ export class FirmwarePage extends Page {
   #progressBarText = document.querySelector("#firmware-progress-bar .progress-bar-text");
   #abortUpload = false;
 
-  constructor(client) {
+  constructor(sharedState) {
     // Register the page
-    super("firmware-page");
-
-    // Store the management client
-    this.client = client;
+    super("firmware-page", sharedState);
 
     // Hook up event listeners
     this.#backBtn.addEventListener("click", this.backButtonClicked);
@@ -188,15 +185,13 @@ export class FirmwarePage extends Page {
   };
 
   async reconnect() {
-    for (let i = 0; i < 15; i++) {
-      // Attempt to reconnect
-      try {
-        await this.client.connect(1000);
-        await this.updateComplete(true);
-        return;
-      } catch (error) {
-        if (!(error instanceof TimeoutError)) throw error;
-      }
+    // Attempt to reconnect
+    try {
+      await this.client.connect();
+      await this.updateComplete(true);
+      return;
+    } catch (error) {
+      if (!(error instanceof TimeoutError)) throw error;
     }
 
     // Handle reconnection failure
@@ -214,7 +209,6 @@ export class FirmwarePage extends Page {
 
     if (!success) {
       this.#progressInfo.textContent = "Firmware update failed.";
-      this.client.clearDevice();
       return;
     }
 

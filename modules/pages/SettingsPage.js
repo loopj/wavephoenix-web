@@ -1,4 +1,4 @@
-import { Page, showPage } from "../page.js";
+import { Page, showPage } from "./Page.js";
 
 export class SettingsPage extends Page {
   #backBtn = document.getElementById("settings-back-btn");
@@ -8,12 +8,9 @@ export class SettingsPage extends Page {
   #pinWirelessId = document.getElementById("settings-pin-wireless-id");
   #pairingButtons = document.getElementById("settings-pairing-buttons");
 
-  constructor(client) {
+  constructor(sharedState) {
     // Register the page
-    super("settings-page");
-
-    // Store the management client
-    this.client = client;
+    super("settings-page", sharedState);
 
     // Hook up event listeners
     this.#backBtn.addEventListener("click", this.backButtonClicked);
