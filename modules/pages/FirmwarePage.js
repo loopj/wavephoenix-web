@@ -1,5 +1,5 @@
-import { TimeoutError, versionString } from "../ManagementClient.js";
 import { MCUbootImage } from "../MCUbootImage.js";
+import { TimeoutError, versionString } from "../utils.js";
 import { Page, showPage } from "./Page.js";
 
 const DFU_CHUNK_SIZE = 64;
@@ -30,9 +30,9 @@ export class FirmwarePage extends Page {
   #progressBarText = document.querySelector("#firmware-progress-bar .progress-bar-text");
   #abortUpload = false;
 
-  constructor(sharedState) {
+  constructor() {
     // Register the page
-    super("firmware-page", sharedState);
+    super("firmware-page");
 
     // Hook up event listeners
     this.#backBtn.addEventListener("click", this.backButtonClicked);

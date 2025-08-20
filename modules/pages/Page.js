@@ -19,17 +19,18 @@ export function showPage(name) {
 }
 
 export class Page {
-  constructor(elementId, sharedState) {
+  static sharedState = {};
+
+  constructor(elementId) {
     this.el = document.getElementById(elementId);
-    this.sharedState = sharedState;
   }
 
   set client(client) {
-    this.sharedState.client = client;
+    Page.sharedState.client = client;
   }
 
   get client() {
-    return this.sharedState.client;
+    return Page.sharedState.client;
   }
 
   show() {

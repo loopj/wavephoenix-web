@@ -1,3 +1,5 @@
+import { withTimeout } from "./utils.js";
+
 export const MANAGEMENT_SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
 
 const SETTINGS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5751);
@@ -22,23 +24,6 @@ const SETTINGS = {
   PAIRING_BUTTONS: 0x03,
 };
 
-export class TimeoutError extends Error {}
-
-export function versionString(version) {
-  let versionString = `${version.major}.${version.minor}.${version.patch}`;
-  if (version.build !== 0) {
-    versionString += `+${version.build}`;
-  }
-  return versionString;
-}
-
-function withTimeout(promise, timeout) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), timeout)),
-  ]);
-}
-
 export class ManagementClient {
   #device = null;
 
@@ -61,8 +46,7 @@ export class ManagementClient {
     await withTimeout(this.#device.gatt.connect(), timeout);
 
     // Set up characteristics
-    const server = this.#device.gatt;
-    const service = await server.getPrimaryService(MANAGEMENT_SERVICE_UUID);
+    const service = await this.#device.gatt.getPrimaryService(MANAGEMENT_SERVICE_UUID);
     this.#settingsChar = await service.getCharacteristic(SETTINGS_CHAR_UUID);
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);

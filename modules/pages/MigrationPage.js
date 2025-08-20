@@ -3,21 +3,15 @@ import { Page } from "./Page.js";
 export class MigrationPage extends Page {
   #backBtn = document.getElementById("migration-back-btn");
 
-  constructor(sharedState) {
+  constructor() {
     // Register the page
-    super("migration-page", sharedState);
+    super("migration-page");
 
     // Hook up event listeners
     this.#backBtn.addEventListener("click", this.backButtonClicked);
   }
 
-  backButtonClicked = () => {
-    if (this.client.connected) {
-      showPage("menu");
-    } else {
-      showPage("connect");
-    }
-  };
+  backButtonClicked = () => {};
 
   onShow() {
     // Reset button states

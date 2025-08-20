@@ -1,15 +1,16 @@
-import { GECKO_BOOTLOADER_SERVICE_UUID } from "../GeckoBootloaderClient.js";
-import { MANAGEMENT_SERVICE_UUID, ManagementClient, TimeoutError } from "../ManagementClient.js";
+import { GECKO_BOOTLOADER_SERVICE_UUID, GeckoBootloaderClient } from "../GeckoBootloaderClient.js";
+import { MANAGEMENT_SERVICE_UUID, ManagementClient } from "../ManagementClient.js";
 import { MIGRATION_SERVICE_UUID } from "../MigrationClient.js";
+import { TimeoutError } from "../utils.js";
 import { Page, showPage } from "./Page.js";
 
 export class ConnectPage extends Page {
   #connectBtn = document.getElementById("connect-btn");
   #connectError = document.getElementById("connect-error");
 
-  constructor(sharedState) {
+  constructor() {
     // Register the page
-    super("connect-page", sharedState);
+    super("connect-page");
 
     // Hook up event listeners
     this.#connectBtn.addEventListener("click", this.connectButtonClicked);
@@ -51,10 +52,12 @@ export class ConnectPage extends Page {
           showPage("menu");
           break;
         case MIGRATION_SERVICE_UUID:
-          console.log("Connected to Migration Service");
+          showPage("migration");
           break;
         case GECKO_BOOTLOADER_SERVICE_UUID:
-          console.log("Connected to Gecko Bootloader Service");
+          this.client = new GeckoBootloaderClient(device);
+          await this.client.connect();
+          showPage("legacy-firmware");
           break;
         default:
           console.error("Unknown service UUID:", serviceUUID);

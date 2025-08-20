@@ -8,9 +8,9 @@ export class SettingsPage extends Page {
   #pinWirelessId = document.getElementById("settings-pin-wireless-id");
   #pairingButtons = document.getElementById("settings-pairing-buttons");
 
-  constructor(sharedState) {
+  constructor() {
     // Register the page
-    super("settings-page", sharedState);
+    super("settings-page");
 
     // Hook up event listeners
     this.#backBtn.addEventListener("click", this.backButtonClicked);
