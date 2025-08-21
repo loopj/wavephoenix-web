@@ -4,7 +4,7 @@
  * Implements our custom management protocol over Bluetooth.
  */
 
-import { withTimeout } from "@utils";
+import { withTimeout } from "@/utils.js";
 
 // Service UUID
 const MANAGEMENT_SERVICE_UUID = 0x5750;
@@ -78,7 +78,7 @@ export class ManagementClient {
     return this.#device.gatt.connected ?? false;
   }
 
-  gattServerDisconnected = (event) => {
+  gattServerDisconnected = () => {
     this.#disconnectCallback?.();
   };
 

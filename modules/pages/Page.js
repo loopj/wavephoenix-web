@@ -1,36 +1,37 @@
-const pages = {};
+export class Page {
+  static #pages = {};
+  static #state = {};
 
-export function registerPage(name, inst) {
-  pages[name] = inst;
-}
-
-export function showPage(name) {
-  // Check if the page exists, put an error in the console if not
-  if (!pages[name]) {
-    console.error(`Page not found: ${name}`);
-    return;
+  static register(name, inst) {
+    Page.#pages[name] = inst;
   }
 
-  // Hide all pages
-  Object.values(pages).forEach((page) => page.hide());
+  static show(name) {
+    // Check if the page exists, put an error in the console if not
+    if (!Page.#pages[name]) {
+      console.error(`Page not found: ${name}`);
+      return;
+    }
 
-  // Show the requested page
-  if (pages[name]) pages[name].show();
-}
+    // Hide all pages
+    Object.values(Page.#pages).forEach((page) => {
+      page.hide();
+    });
 
-export class Page {
-  static sharedState = {};
+    // Show the requested page
+    Page.#pages[name].show();
+  }
 
   constructor(elementId) {
     this.el = document.getElementById(elementId);
   }
 
   set client(client) {
-    Page.sharedState.client = client;
+    Page.#state.client = client;
   }
 
   get client() {
-    return Page.sharedState.client;
+    return Page.#state.client;
   }
 
   show() {

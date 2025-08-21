@@ -1,6 +1,6 @@
-import { versionString } from "@utils";
+import { versionString } from "@/utils.js";
 
-import { Page, showPage } from "./Page.js";
+import { Page } from "./Page.js";
 
 export class MenuPage extends Page {
   #firmwareVersion = document.getElementById("menu-firmware-version");
@@ -19,11 +19,11 @@ export class MenuPage extends Page {
   }
 
   settingsButtonClicked = async () => {
-    showPage("settings");
+    Page.show("settings");
   };
 
   firmwareButtonClicked = async () => {
-    showPage("firmware");
+    Page.show("firmware");
   };
 
   exitButtonClicked = async () => {
@@ -32,16 +32,14 @@ export class MenuPage extends Page {
       await this.client.leaveSettings();
 
       // Show the connect page
-      showPage("connect");
-    } catch (err) {
+      Page.show("connect");
+    } catch (_e) {
       // Exiting management mode on the device immediately disables
       // Bluetooth, so let's ignore GATT errors
     }
   };
 
   onShow() {
-    this.#firmwareVersion.textContent = `Current firmware version: ${versionString(
-      this.client.getVersion()
-    )}`;
+    this.#firmwareVersion.textContent = `Current firmware version: ${versionString(this.client.getVersion())}`;
   }
 }

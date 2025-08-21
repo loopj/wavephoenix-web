@@ -1,4 +1,4 @@
-import { withTimeout } from "@utils";
+import { withTimeout } from "@/utils.js";
 
 const MIGRATION_SERVICE_UUID = 0x5760;
 

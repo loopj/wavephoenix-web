@@ -3,11 +3,11 @@
  *
  * Implements Gecko Bootloader Bluetooth OTA upgrade protocol.
  *
- * See documentation:
+ * Protocol documentation:
  * https://docs.silabs.com/bluetooth/latest/using-gecko-bootloader-with-bluetooth-apps/03-bluetooth-ota-upgrade
  */
 
-import { withTimeout } from "@utils";
+import { withTimeout } from "@/utils.js";
 
 // Service UUID
 const OTA_SERVICE_UUID = "1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0";
@@ -47,7 +47,7 @@ export class GeckoBootloaderClient {
     await withTimeout(this.#device.gatt.connect(), timeout);
 
     // Set up characteristics
-    const service = await this.#device.gatt.getPrimaryService(GeckoBootloaderClient.SERVICE_UUID);
+    const service = await this.#device.gatt.getPrimaryService(OTA_SERVICE_UUID);
     this.#otaControlChar = await service.getCharacteristic(OTA_CONTROL_UUID);
     this.#otaDataChar = await service.getCharacteristic(OTA_DATA_UUID);
     this.#applicationVersionChar = await service.getCharacteristic(APPLICATION_VERSION_UUID);

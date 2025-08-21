@@ -1,503 +1,506 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WavePhoenix Web</title>
-    <style>
-      html {
-        height: 100%;
-      }
 
-      body {
-        background: #121212;
-        color: #fff;
-        font-family: sans-serif;
-        margin: 0;
-        padding: 0;
-        background-image: url("images/background.gif");
-        background-size: cover;
-        background-position: center;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WavePhoenix Web</title>
+  <style>
+    html {
+      height: 100%;
+    }
 
-      body::before,
-      body::after {
-        content: "";
-        flex-grow: 1;
-      }
+    body {
+      background: #121212;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url("images/background.gif");
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-      a {
-        color: #dddddd;
-        font-weight: bold;
-        text-decoration: none;
-      }
+    body::before,
+    body::after {
+      content: "";
+      flex-grow: 1;
+    }
 
-      /* Helper classes */
-      .hidden {
-        display: none !important;
-      }
+    a {
+      color: #dddddd;
+      font-weight: bold;
+      text-decoration: none;
+    }
 
-      /* Buttons */
-      button {
-        font-family: inherit;
-        font-size: 1rem;
-        padding: 0.75em 1.5em;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.2s, color 0.2s;
-        display: inline-block;
-        text-align: center;
-        min-width: 0;
-        font-weight: bold;
-      }
+    /* Helper classes */
+    .hidden {
+      display: none !important;
+    }
 
-      button.primary {
-        background: #8e287b;
-        color: #fff;
-      }
-      button.primary:hover {
-        background: color-mix(in srgb, #8e287b 90%, white 10%);
-      }
+    /* Buttons */
+    button {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.75em 1.5em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: inline-block;
+      text-align: center;
+      min-width: 0;
+      font-weight: bold;
+    }
 
-      button.secondary {
-        background: #e9d5ff;
-        color: #8e287b;
-      }
-      button.secondary:hover {
-        background: color-mix(in srgb, #e9d5ff 70%, white 30%);
-      }
+    button.primary {
+      background: #8e287b;
+      color: #fff;
+    }
 
-      button.outline {
-        background: none;
-        color: #f3e8ff;
-        border: 1px solid #f3e8ff66;
-        text-decoration: none;
-      }
-      button.outline:hover {
-        background: #e9d5ff22;
-      }
+    button.primary:hover {
+      background: color-mix(in srgb, #8e287b 90%, white 10%);
+    }
 
-      button.loading {
-        position: relative;
-        color: transparent !important;
-      }
+    button.secondary {
+      background: #e9d5ff;
+      color: #8e287b;
+    }
 
-      button.loading::before {
-        content: "";
-        display: inline-block;
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 18px;
-        height: 18px;
-        margin-left: -9px;
-        margin-top: -10px;
-        border: 2px solid #fff;
-        border-top: 2px solid transparent;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-      }
+    button.secondary:hover {
+      background: color-mix(in srgb, #e9d5ff 70%, white 30%);
+    }
 
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+    button.outline {
+      background: none;
+      color: #f3e8ff;
+      border: 1px solid #f3e8ff66;
+      text-decoration: none;
+    }
 
-      /* Header and Footer */
-      .header-bar {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        background: rgba(0, 0, 0, 0.3);
-        color: white;
-        text-align: center;
-        padding: 15px 0;
-        z-index: 1000;
-      }
+    button.outline:hover {
+      background: #e9d5ff22;
+    }
 
-      .footer-bar {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        background: rgba(0, 0, 0, 0.3);
-        color: white;
-        text-align: center;
-        padding: 8px 0;
-        font-size: 14px;
-      }
+    button.loading {
+      position: relative;
+      color: transparent !important;
+    }
 
-      /* Cards */
+    button.loading::before {
+      content: "";
+      display: inline-block;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      margin-left: -9px;
+      margin-top: -10px;
+      border: 2px solid #fff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Header and Footer */
+    .header-bar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      z-index: 1000;
+    }
+
+    .footer-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      text-align: center;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+
+    /* Cards */
+    .card {
+      position: relative;
+      width: 500px;
+      margin: 20px auto;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 15px;
+      box-sizing: border-box;
+    }
+
+    .card.dragging::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 15px;
+      z-index: 1;
+    }
+
+    .card p {
+      margin: 25px 0;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
       .card {
-        position: relative;
-        width: 500px;
-        margin: 20px auto;
-        background: rgba(0, 0, 0, 0.75);
-        border-radius: 15px;
-        box-sizing: border-box;
+        width: 90vw;
       }
+    }
 
-      .card.dragging::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 15px;
-        z-index: 1;
-      }
+    .card-title {
+      font-weight: bold;
+      margin: 25px 15px;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
 
-      .card p {
-        margin: 25px 0;
-        line-height: 1.5;
-        text-align: center;
-      }
+    .card-title.not-supported {
+      color: #f44336;
+    }
 
-      @media (max-width: 600px) {
-        .card {
-          width: 90vw;
-        }
-      }
+    .card-title.not-connected {
+      color: #ff9800;
+    }
 
-      .card-title {
-        font-weight: bold;
-        margin: 25px 15px;
-        text-align: center;
-        font-size: 14px;
-        letter-spacing: 1px;
-      }
+    .card-title.connected {
+      color: #4caf50;
+    }
 
-      .card-title.not-supported {
-        color: #f44336;
-      }
+    .card-body {
+      margin: 25px 15px;
+      box-sizing: border-box;
+    }
 
-      .card-title.not-connected {
-        color: #ff9800;
-      }
+    .card-actions {
+      display: flex;
+      gap: 15px;
+      margin: 15px;
+    }
 
-      .card-title.connected {
-        color: #4caf50;
-      }
+    .card-actions button {
+      flex: 1 1 0;
+      margin-top: 0;
+    }
 
-      .card-body {
-        margin: 25px 15px;
-        box-sizing: border-box;
-      }
+    /* Progress bars */
+    .progress-bar {
+      position: relative;
+      width: 100%;
+      height: 30px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #00000044;
+    }
 
-      .card-actions {
-        display: flex;
-        gap: 15px;
-        margin: 15px;
-      }
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(to right, #4caf50, #66bb6a);
+    }
 
-      .card-actions button {
-        flex: 1 1 0;
-        margin-top: 0;
-      }
+    .progress-bar-text {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      text-align: center;
+      line-height: 30px;
+      font-size: 14px;
+      color: white;
+      pointer-events: none;
+    }
 
-      /* Progress bars */
-      .progress-bar {
-        position: relative;
-        width: 100%;
-        height: 30px;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #00000044;
-      }
+    /* TODO: Make more generic */
+    button.menu-item {
+      display: block;
+      width: 100%;
+      margin: 0.5em 0;
+    }
 
-      .progress-bar-fill {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(to right, #4caf50, #66bb6a);
-      }
+    .button-menu button {
+      display: block;
+      width: 100%;
+    }
 
-      .progress-bar-text {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        text-align: center;
-        line-height: 30px;
-        font-size: 14px;
-        color: white;
-        pointer-events: none;
-      }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 15px 0;
+      border-bottom: 1px solid #5b5b5b;
+    }
 
-      /* TODO: Make more generic */
-      button.menu-item {
-        display: block;
-        width: 100%;
-        margin: 0.5em 0;
-      }
+    .settings-row:last-child {
+      border-bottom: none;
+    }
 
-      .button-menu button {
-        display: block;
-        width: 100%;
-      }
+    .settings-row label {
+      color: #ccc;
+      font-size: 17px;
+      flex: 1;
+      text-align: left;
+    }
+  </style>
+</head>
 
-      .settings-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 15px 0;
-        border-bottom: 1px solid #5b5b5b;
-      }
+<body>
+  <div class="header-bar">
+    <img src="images/logo.svg" height="20" alt="WavePhoenix Logo">
+  </div>
 
-      .settings-row:last-child {
-        border-bottom: none;
-      }
+  <!-- Not Supported Page -->
+  <div id="not-supported-page" class="card hidden">
+    <div class="card-title not-supported">NOT SUPPORTED</div>
 
-      .settings-row label {
-        color: #ccc;
-        font-size: 17px;
-        flex: 1;
-        text-align: left;
-      }
-    </style>
-  </head>
+    <div class="card-body">
+      <p>Your browser does not support Web Bluetooth.</p>
+      <p>Please try using <b>Google Chrome</b> or a compatible browser.</p>
+    </div>
+  </div>
 
-  <body>
-    <div class="header-bar">
-      <img src="images/logo.svg" height="20" alt="WavePhoenix Logo" />
+  <!-- Welcome Page -->
+  <div id="connect-page" class="card hidden">
+    <div class="card-title not-connected">NOT CONNECTED</div>
+
+    <div class="card-body">
+      <p id="connect-info">Welcome to the WavePhoenix Web!</p>
+      <p>Hold the pair button on your WavePhoenix for 3 seconds to enter management mode.</p>
+      <p>
+        The LED will begin fading on and off to indicate management mode is active. Then click
+        <em>Connect to Device</em> below.
+      </p>
     </div>
 
-    <!-- Not Supported Page -->
-    <div id="not-supported-page" class="card hidden">
-      <div class="card-title not-supported">NOT SUPPORTED</div>
+    <div class="card-actions">
+      <button id="connect-btn" class="primary">Connect to Device</button>
+    </div>
+  </div>
 
-      <div class="card-body">
-        <p>Your browser does not support Web Bluetooth.</p>
-        <p>Please try using <b>Google Chrome</b> or a compatible browser.</p>
-      </div>
+  <!-- Main Menu -->
+  <div id="menu-page" class="card hidden">
+    <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
+
+    <p id="menu-firmware-version"></p>
+
+    <div class="card-body">
+      <button id="menu-settings-btn" class="primary menu-item">Device Settings</button>
+      <button id="menu-firmware-btn" class="primary menu-item">Firmware Update</button>
     </div>
 
-    <!-- Welcome Page -->
-    <div id="connect-page" class="card hidden">
-      <div class="card-title not-connected">NOT CONNECTED</div>
-
-      <div class="card-body">
-        <p id="connect-info">Welcome to the WavePhoenix Web!</p>
-        <p>Hold the pair button on your WavePhoenix for 3 seconds to enter management mode.</p>
-        <p>
-          The LED will begin fading on and off to indicate management mode is active. Then click
-          <em>Connect to Device</em> below.
-        </p>
-      </div>
-
-      <div class="card-actions">
-        <button id="connect-btn" class="primary">Connect to Device</button>
-      </div>
+    <div class="card-actions">
+      <button id="menu-exit-btn" class="secondary">Exit Management Mode</button>
     </div>
+  </div>
 
-    <!-- Main Menu -->
-    <div id="menu-page" class="card hidden">
-      <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
+  <!-- Settings Page -->
+  <div id="settings-page" class="card hidden">
+    <div class="card-title connected">DEVICE SETTINGS</div>
 
-      <p id="menu-firmware-version"></p>
-
-      <div class="card-body">
-        <button id="menu-settings-btn" class="primary menu-item">Device Settings</button>
-        <button id="menu-firmware-btn" class="primary menu-item">Firmware Update</button>
+    <div id="settings-rows" class="card-body">
+      <div class="settings-row">
+        <label for="settings-wireless-channel">Wireless Channel</label>
+        <select id="settings-wireless-channel">
+          <option value="0">1</option>
+          <option value="1">2</option>
+          <option value="2">3</option>
+          <option value="3">4</option>
+          <option value="4">5</option>
+          <option value="5">6</option>
+          <option value="6">7</option>
+          <option value="7">8</option>
+          <option value="8">9</option>
+          <option value="9">10</option>
+          <option value="10">11</option>
+          <option value="11">12</option>
+          <option value="12">13</option>
+          <option value="13">14</option>
+          <option value="14">15</option>
+          <option value="15">16</option>
+        </select>
       </div>
 
-      <div class="card-actions">
-        <button id="menu-exit-btn" class="secondary">Exit Management Mode</button>
-      </div>
-    </div>
-
-    <!-- Settings Page -->
-    <div id="settings-page" class="card hidden">
-      <div class="card-title connected">DEVICE SETTINGS</div>
-
-      <div id="settings-rows" class="card-body">
-        <div class="settings-row">
-          <label for="settings-wireless-channel">Wireless Channel</label>
-          <select id="settings-wireless-channel">
-            <option value="0">1</option>
-            <option value="1">2</option>
-            <option value="2">3</option>
-            <option value="3">4</option>
-            <option value="4">5</option>
-            <option value="5">6</option>
-            <option value="6">7</option>
-            <option value="7">8</option>
-            <option value="8">9</option>
-            <option value="9">10</option>
-            <option value="10">11</option>
-            <option value="11">12</option>
-            <option value="12">13</option>
-            <option value="13">14</option>
-            <option value="14">15</option>
-            <option value="15">16</option>
-          </select>
-        </div>
-
-        <div class="settings-row">
-          <label for="settings-controller-type">Controller Type</label>
-          <select id="settings-controller-type">
-            <option value="0">WaveBird</option>
-            <option value="1">Wired Controller</option>
-            <option value="2">Wired Controller (No Motor)</option>
-          </select>
-        </div>
-
-        <div class="settings-row">
-          <label for="settings-pin-wireless-id">Wireless ID Pinning</label>
-          <input type="checkbox" id="settings-pin-wireless-id" />
-        </div>
-
-        <div class="settings-row">
-          <label for="settings-pairing-buttons">Pairing Buttons</label>
-          <select id="settings-pairing-buttons" multiple class="hidden">
-            <option value="0">Left</option>
-            <option value="1">Right</option>
-            <option value="2">Down</option>
-            <option value="3">Up</option>
-            <option value="4">Z</option>
-            <option value="5">R</option>
-            <option value="6">L</option>
-            <option value="7">A</option>
-            <option value="8">B</option>
-            <option value="9">X</option>
-            <option value="10">Y</option>
-            <option value="11">Start</option>
-          </select>
-        </div>
+      <div class="settings-row">
+        <label for="settings-controller-type">Controller Type</label>
+        <select id="settings-controller-type">
+          <option value="0">WaveBird</option>
+          <option value="1">Wired Controller</option>
+          <option value="2">Wired Controller (No Motor)</option>
+        </select>
       </div>
 
-      <div class="card-actions">
-        <button id="settings-back-btn" class="secondary">Back</button>
+      <div class="settings-row">
+        <label for="settings-pin-wireless-id">Wireless ID Pinning</label>
+        <input type="checkbox" id="settings-pin-wireless-id">
+      </div>
+
+      <div class="settings-row">
+        <label for="settings-pairing-buttons">Pairing Buttons</label>
+        <select id="settings-pairing-buttons" multiple class="hidden">
+          <option value="0">Left</option>
+          <option value="1">Right</option>
+          <option value="2">Down</option>
+          <option value="3">Up</option>
+          <option value="4">Z</option>
+          <option value="5">R</option>
+          <option value="6">L</option>
+          <option value="7">A</option>
+          <option value="8">B</option>
+          <option value="9">X</option>
+          <option value="10">Y</option>
+          <option value="11">Start</option>
+        </select>
       </div>
     </div>
 
-    <!-- Firmware Update Page -->
-    <div id="firmware-page" class="card hidden">
-      <div class="card-title connected">FIRMWARE UPDATE</div>
+    <div class="card-actions">
+      <button id="settings-back-btn" class="secondary">Back</button>
+    </div>
+  </div>
 
-      <input type="file" id="firmware-file" accept=".bin" class="hidden" />
+  <!-- Firmware Update Page -->
+  <div id="firmware-page" class="card hidden">
+    <div class="card-title connected">FIRMWARE UPDATE</div>
 
-      <div id="firmware-file-selection-area" class="card-body">
-        <p id="firmware-file-selection-info"></p>
-        <p>
-          <button id="firmware-choose-btn" class="primary">Choose Firmware File</button>
-        </p>
-      </div>
+    <input type="file" id="firmware-file" accept=".bin" class="hidden">
 
-      <div id="firmware-file-selected-area" class="card-body hidden">
-        <p id="firmware-file-selected-info"></p>
-        <p>
-          <button id="firmware-change-btn" class="outline">Change File</button>
-        </p>
-      </div>
+    <div id="firmware-file-selection-area" class="card-body">
+      <p id="firmware-file-selection-info"></p>
+      <p>
+        <button id="firmware-choose-btn" class="primary">Choose Firmware File</button>
+      </p>
+    </div>
 
-      <div id="firmware-progress-area" class="card-body hidden">
-        <p id="firmware-progress-info"></p>
-        <div id="firmware-progress-bar" class="progress-bar">
-          <div class="progress-bar-fill"></div>
-          <div class="progress-bar-text">0%</div>
-        </div>
-      </div>
+    <div id="firmware-file-selected-area" class="card-body hidden">
+      <p id="firmware-file-selected-info"></p>
+      <p>
+        <button id="firmware-change-btn" class="outline">Change File</button>
+      </p>
+    </div>
 
-      <div class="card-actions">
-        <button id="firmware-back-btn" class="secondary">Back</button>
-        <button id="firmware-flash-btn" class="primary hidden">Flash Firmware</button>
-        <button id="firmware-cancel-btn" class="secondary hidden">Cancel</button>
+    <div id="firmware-progress-area" class="card-body hidden">
+      <p id="firmware-progress-info"></p>
+      <div id="firmware-progress-bar" class="progress-bar">
+        <div class="progress-bar-fill"></div>
+        <div class="progress-bar-text">0%</div>
       </div>
     </div>
 
-    <div id="migration-page" class="card hidden">
-      <div class="card-title connected">MIGRATION</div>
+    <div class="card-actions">
+      <button id="firmware-back-btn" class="secondary">Back</button>
+      <button id="firmware-flash-btn" class="primary hidden">Flash Firmware</button>
+      <button id="firmware-cancel-btn" class="secondary hidden">Cancel</button>
+    </div>
+  </div>
 
-      <div class="card-body">
-        <p>Bootloader migration firmware detected.</p>
-      </div>
+  <!-- Bootloader Migration Page -->
+  <div id="migration-page" class="card hidden">
+    <div class="card-title connected">MIGRATION</div>
 
-      <div class="card-actions">
-        <button id="migration-back-btn" class="secondary">Back</button>
+    <div class="card-body">
+      <p>Bootloader migration firmware detected.</p>
+    </div>
+
+    <div class="card-actions">
+      <button id="migration-back-btn" class="secondary">Back</button>
+    </div>
+  </div>
+
+  <!-- Legacy Firmware Update Page -->
+  <div id="legacy-firmware-page" class="card hidden">
+    <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
+
+    <input type="file" id="legacy-firmware-file" accept=".gbl" class="hidden">
+
+    <div id="legacy-firmware-selection-area" class="card-body">
+      <p id="legacy-firmware-selection-info"></p>
+      <p>Select a firmware file to continue.</p>
+    </div>
+
+    <div id="legacy-firmware-selected-area" class="card-body hidden">
+      <p>Firmware file ready.</p>
+      <p>Click <em>Flash Firmware</em> to continue.</p>
+    </div>
+
+    <div id="legacy-firmware-progress-area" class="card-body hidden">
+      <p id="legacy-firmware-progress-info"></p>
+      <div id="legacy-firmware-progress-bar" class="progress-bar">
+        <div class="progress-bar-fill"></div>
+        <div class="progress-bar-text">0%</div>
       </div>
     </div>
 
-    <div id="legacy-firmware-page" class="card hidden">
-      <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
-
-      <input type="file" id="legacy-firmware-file" accept=".gbl" class="hidden" />
-
-      <div id="legacy-firmware-selection-area" class="card-body">
-        <p id="legacy-firmware-selection-info"></p>
-        <p>Select a firmware file to continue.</p>
-      </div>
-
-      <div id="legacy-firmware-selected-area" class="card-body hidden">
-        <p>Firmware file ready.</p>
-        <p>Click <em>Flash Firmware</em> to continue.</p>
-      </div>
-
-      <div id="legacy-firmware-progress-area" class="card-body hidden">
-        <p id="legacy-firmware-progress-info"></p>
-        <div id="legacy-firmware-progress-bar" class="progress-bar">
-          <div class="progress-bar-fill"></div>
-          <div class="progress-bar-text">0%</div>
-        </div>
-      </div>
-
-      <div class="card-actions">
-        <button id="legacy-firmware-choose-btn" class="primary">Choose Firmware File</button>
-        <button id="legacy-firmware-back-btn" class="secondary hidden">Back</button>
-        <button id="legacy-firmware-flash-btn" class="primary hidden">Flash Firmware</button>
-        <button id="legacy-firmware-cancel-btn" class="secondary hidden">Cancel</button>
-        <button id="legacy-firmware-reboot-btn" class="primary hidden">Reboot Device</button>
-      </div>
+    <div class="card-actions">
+      <button id="legacy-firmware-choose-btn" class="primary">Choose Firmware File</button>
+      <button id="legacy-firmware-back-btn" class="secondary hidden">Back</button>
+      <button id="legacy-firmware-flash-btn" class="primary hidden">Flash Firmware</button>
+      <button id="legacy-firmware-cancel-btn" class="secondary hidden">Cancel</button>
+      <button id="legacy-firmware-reboot-btn" class="primary hidden">Reboot Device</button>
     </div>
+  </div>
 
-    <div class="footer-bar">
-      Part of the
-      <a href="https://github.com/loopj/wavephoenix">WavePhoenix</a> project by <a href="https://loopj.com">loopj</a>.
-      Art by <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
-    </div>
+  <div class="footer-bar">
+    Part of the
+    <a href="https://github.com/loopj/wavephoenix">WavePhoenix</a> project by <a href="https://loopj.com">loopj</a>.
+    Art by <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
+  </div>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "@/": "/modules/",
-          "@clients/": "/modules/clients/",
-          "@pages/": "/modules/pages/",
-          "@images/": "/modules/images/",
-          "@utils": "/modules/utils.js"
-        }
+  <script type="importmap">
+    {
+      "imports": {
+        "@/": "/modules/"
       }
-    </script>
+    }
+  </script>
 
-    <script type="module">
-      import { ConnectPage } from "@pages/ConnectPage.js";
-      import { FirmwarePage } from "@pages/FirmwarePage.js";
-      import { LegacyFirmwarePage } from "@pages/LegacyFirmwarePage.js";
-      import { MenuPage } from "@pages/MenuPage.js";
-      import { MigrationPage } from "@pages/MigrationPage.js";
-      import { NotSupportedPage } from "@pages/NotSupportedPage.js";
-      import { registerPage, showPage } from "@pages/Page.js";
-      import { SettingsPage } from "@pages/SettingsPage.js";
+  <script type="module">
+    import { ConnectPage } from "@/pages/ConnectPage.js";
+    import { FirmwarePage } from "@/pages/FirmwarePage.js";
+    import { LegacyFirmwarePage } from "@/pages/LegacyFirmwarePage.js";
+    import { MenuPage } from "@/pages/MenuPage.js";
+    import { MigrationPage } from "@/pages/MigrationPage.js";
+    import { NotSupportedPage } from "@/pages/NotSupportedPage.js";
+    import { Page } from "@/pages/Page.js";
+    import { SettingsPage } from "@/pages/SettingsPage.js";
 
-      // Check if the browser supports Web Bluetooth
-      if (!navigator.bluetooth) {
-        registerPage("not-supported", new NotSupportedPage());
-        showPage("not-supported");
-      } else {
-        registerPage("connect", new ConnectPage());
-        registerPage("firmware", new FirmwarePage());
-        registerPage("legacy-firmware", new LegacyFirmwarePage());
-        registerPage("menu", new MenuPage());
-        registerPage("migration", new MigrationPage());
-        registerPage("settings", new SettingsPage());
-        showPage("connect");
-      }
-    </script>
-  </body>
+    // Check if the browser supports Web Bluetooth
+    if (!navigator.bluetooth) {
+      Page.register("not-supported", new NotSupportedPage());
+      Page.show("not-supported");
+    } else {
+      Page.register("connect", new ConnectPage());
+      Page.register("firmware", new FirmwarePage());
+      Page.register("legacy-firmware", new LegacyFirmwarePage());
+      Page.register("menu", new MenuPage());
+      Page.register("migration", new MigrationPage());
+      Page.register("settings", new SettingsPage());
+      Page.show("connect");
+    }
+  </script>
+</body>
+
 </html>

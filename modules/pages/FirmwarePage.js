@@ -1,7 +1,7 @@
-import { MCUbootImage } from "@images/MCUbootImage.js";
-import { TimeoutError, versionString } from "@utils";
+import { MCUbootImage } from "@/images/MCUbootImage.js";
+import { versionString } from "@/utils.js";
 
-import { Page, showPage } from "./Page.js";
+import { Page } from "./Page.js";
 
 export class FirmwarePage extends Page {
   #controller;
@@ -56,9 +56,9 @@ export class FirmwarePage extends Page {
 
   backButtonClicked = () => {
     if (this.client.connected) {
-      showPage("menu");
+      Page.show("menu");
     } else {
-      showPage("connect");
+      Page.show("connect");
     }
   };
 
@@ -71,7 +71,7 @@ export class FirmwarePage extends Page {
     this.#page.classList.add("dragging");
   };
 
-  pageDragLeave = (event) => {
+  pageDragLeave = () => {
     this.#page.classList.remove("dragging");
   };
 
@@ -86,11 +86,11 @@ export class FirmwarePage extends Page {
   };
 
   setProgress = (percent) => {
-    this.#progressBarFill.style.width = percent + "%";
-    this.#progressBarText.textContent = Math.round(percent) + "%";
+    this.#progressBarFill.style.width = `${percent}%`;
+    this.#progressBarText.textContent = `${Math.round(percent)}%`;
   };
 
-  fileInputChanged = async (event) => {
+  fileInputChanged = async () => {
     // Return early if no file is selected
     if (this.#fileInput.files.length === 0) {
       console.error("No firmware file selected");
@@ -177,8 +177,8 @@ export class FirmwarePage extends Page {
       await this.client.connect();
       await this.updateComplete(true);
       return;
-    } catch (error) {
-      if (!(error instanceof TimeoutError)) throw error;
+    } catch (e) {
+      if (e.code !== "ETIMEDOUT") throw e;
     }
 
     // Handle reconnection failure

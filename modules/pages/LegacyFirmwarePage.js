@@ -1,6 +1,6 @@
-import { versionString } from "@utils";
+import { versionString } from "@/utils.js";
 
-import { Page, showPage } from "./Page.js";
+import { Page } from "./Page.js";
 
 export class LegacyFirmwarePage extends Page {
   #fileInput = document.getElementById("legacy-firmware-file");
@@ -37,7 +37,7 @@ export class LegacyFirmwarePage extends Page {
     this.#rebootBtn.addEventListener("click", this.rebootButtonClicked);
   }
 
-  fileInputChanged = (event) => {
+  fileInputChanged = () => {
     // Return early if no file is selected
     if (this.#fileInput.files.length === 0) {
       console.error("No firmware file selected");
@@ -88,8 +88,8 @@ export class LegacyFirmwarePage extends Page {
   };
 
   setProgress = (percent) => {
-    this.#progressBarFill.style.width = percent + "%";
-    this.#progressBarText.textContent = Math.round(percent) + "%";
+    this.#progressBarFill.style.width = `${percent}%`;
+    this.#progressBarText.textContent = `${Math.round(percent)}%`;
   };
 
   updateComplete(success) {
@@ -106,7 +106,7 @@ export class LegacyFirmwarePage extends Page {
 
   rebootButtonClicked = () => {
     this.client.disconnect();
-    showPage("connect");
+    Page.show("connect");
   };
 
   backButtonClicked = () => {

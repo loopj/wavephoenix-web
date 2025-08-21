@@ -1,9 +1,8 @@
-import { GeckoBootloaderClient } from "@clients/GeckoBootloaderClient.js";
-import { ManagementClient } from "@clients/ManagementClient.js";
-import { MigrationClient } from "@clients/MigrationClient.js";
-import { TimeoutError } from "@utils";
+import { GeckoBootloaderClient } from "@/clients/GeckoBootloaderClient.js";
+import { ManagementClient } from "@/clients/ManagementClient.js";
+import { MigrationClient } from "@/clients/MigrationClient.js";
 
-import { Page, showPage } from "./Page.js";
+import { Page } from "./Page.js";
 
 export class ConnectPage extends Page {
   #connectBtn = document.getElementById("connect-btn");
@@ -43,14 +42,14 @@ export class ConnectPage extends Page {
           // Set up a management client
           this.client = new ManagementClient(device);
           this.client.setDisconnectCallback(() => {
-            showPage("connect");
+            Page.show("connect");
           });
 
           // Connect to the management client
           await this.client.connect();
 
           // Show the management menu
-          showPage("menu");
+          Page.show("menu");
           break;
         case MigrationClient.SERVICE_UUID:
           // Set up a migration client
@@ -58,7 +57,7 @@ export class ConnectPage extends Page {
           await this.client.connect();
 
           // Show the migration page
-          showPage("migration");
+          Page.show("migration");
           break;
         case GeckoBootloaderClient.SERVICE_UUID:
           // Set up a Gecko bootloader client
@@ -66,7 +65,7 @@ export class ConnectPage extends Page {
           await this.client.connect();
 
           // Show the legacy firmware page
-          showPage("legacy-firmware");
+          Page.show("legacy-firmware");
           break;
         default:
           console.error("Unknown service UUID:", serviceUUID);
@@ -77,7 +76,7 @@ export class ConnectPage extends Page {
       // Handle error
       if (e.name === "NotFoundError") {
         console.debug("User cancelled Bluetooth device selection");
-      } else if (e instanceof TimeoutError) {
+      } else if (e.code === "ETIMEDOUT") {
         this.#connectInfo.textContent = "Connection timed out. Please try again.";
       } else {
         this.#connectInfo.textContent = "Bluetooth connection failed. Please try again.";

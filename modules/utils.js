@@ -1,15 +1,17 @@
 /**
- * Custom error class for timeout errors.
- */
-export class TimeoutError extends Error {}
-
-/**
  * Wrap a promise with a timeout.
  */
 export function withTimeout(promise, timeout) {
   return Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(new TimeoutError()), timeout)),
+    new Promise((_resolve, reject) =>
+      setTimeout(() => {
+        const error = new Error("Connection timed out");
+        error.name = "TimeoutError";
+        error.code = "ETIMEDOUT";
+        reject(error);
+      }, timeout),
+    ),
   ]);
 }
 
