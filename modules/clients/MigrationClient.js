@@ -1,8 +1,8 @@
-import { withTimeout } from "../utils.js";
-
-export const MIGRATION_SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5760);
+import { withTimeout } from "@utils";
 
 export class MigrationClient {
+  static SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5760);
+
   #device = null;
 
   constructor(device) {
@@ -15,7 +15,7 @@ export class MigrationClient {
     await withTimeout(this.#device.gatt.connect(), timeout);
 
     // Set up characteristics
-    const service = await this.#device.gatt.getPrimaryService(MIGRATION_SERVICE_UUID);
+    const service = await this.#device.gatt.getPrimaryService(MigrationClient.SERVICE_UUID);
   }
 
   disconnect() {

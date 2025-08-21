@@ -1,11 +1,12 @@
-import { MCUbootImage } from "../images/MCUbootImage.js";
-import { TimeoutError, versionString } from "../utils.js";
+import { MCUbootImage } from "@images/MCUbootImage.js";
+import { TimeoutError, versionString } from "@utils";
+
 import { Page, showPage } from "./Page.js";
 
-const DFU_CHUNK_SIZE = 64;
-
 export class FirmwarePage extends Page {
+  #controller;
   #page = document.getElementById("firmware-page");
+  #fileInput = document.getElementById("firmware-file");
 
   // Button bar
   #backBtn = document.getElementById("firmware-back-btn");
@@ -15,7 +16,6 @@ export class FirmwarePage extends Page {
   // File selection area
   #fileSelectionArea = document.getElementById("firmware-file-selection-area");
   #fileSelectionInfo = document.getElementById("firmware-file-selection-info");
-  #fileInput = document.getElementById("firmware-file");
   #chooseBtn = document.getElementById("firmware-choose-btn");
 
   // File selected area
@@ -28,7 +28,6 @@ export class FirmwarePage extends Page {
   #progressInfo = document.getElementById("firmware-progress-info");
   #progressBarFill = document.querySelector("#firmware-progress-bar .progress-bar-fill");
   #progressBarText = document.querySelector("#firmware-progress-bar .progress-bar-text");
-  #abortUpload = false;
 
   constructor() {
     // Register the page
@@ -64,8 +63,7 @@ export class FirmwarePage extends Page {
   };
 
   cancelButtonClicked = () => {
-    this.#abortUpload = true;
-    this.onShow();
+    this.#controller.abort();
   };
 
   pageDragEnter = (event) => {
@@ -144,44 +142,33 @@ export class FirmwarePage extends Page {
     // Show cancel button
     this.#cancelBtn.classList.remove("hidden");
 
-    // Reset abort flag
-    this.#abortUpload = false;
-
     // Start the DFU process
     const file = this.#fileInput.files[0];
     const buffer = await file.arrayBuffer();
 
     try {
-      // Step 1: Send DFU_BEGIN command
-      await this.client.beginDFU();
-
-      // Step 2: Send firmware data in chunks
-      const total = buffer.byteLength;
-      for (let start = 0; start < total; start += DFU_CHUNK_SIZE) {
-        // Check for cancellation
-        if (this.#abortUpload) return;
-
-        // Write the next chunk
-        const chunk = buffer.slice(start, start + DFU_CHUNK_SIZE);
-        await this.client.writeFirmware(chunk, { withResponse: false });
-
-        // Update progress
-        this.setProgress(Math.min((start / total) * 100, 99));
+      await this.client.writeFirmware(buffer, {
+        progress: this.setProgress,
+        signal: this.#controller.signal,
+      });
+    } catch (e) {
+      if (e.name === "AbortError") {
+        // User canceled the firmware update
+        this.onShow();
+      } else {
+        // Unexpected error
+        console.error("Error flashing firmware:", e);
+        this.updateComplete(false);
       }
-    } catch (error) {
-      await this.updateComplete(false);
-      console.error("Firmware update failed:", error);
       return;
     }
 
-    // Replace the disconnect handler temporarily to reconnect after firmware update
-    const prevHandler = this.client.setDisconnectCallback(async () => {
-      this.client.setDisconnectCallback(prevHandler);
+    // Temporarily replace the disconnect handler, we are expecting a disconnect after the reboot
+    const disconnectHandler = this.client.setDisconnectCallback(async () => {
+      this.client.setDisconnectCallback(disconnectHandler);
       await this.reconnect();
     });
-
-    // Step 3: Apply the firmware update
-    await this.client.applyDFU();
+    await this.client.reboot();
   };
 
   async reconnect() {
@@ -219,8 +206,9 @@ export class FirmwarePage extends Page {
   }
 
   onShow() {
-    // Reset the file input
+    // Reset the file input and abort controller
     this.#fileInput.value = "";
+    this.#controller = new AbortController();
 
     // Show only the file selection area
     this.#fileSelectionArea.classList.remove("hidden");
@@ -240,4 +228,6 @@ export class FirmwarePage extends Page {
     this.#flashBtn.classList.add("hidden");
     this.#cancelBtn.classList.add("hidden");
   }
+
+  onHide() {}
 }

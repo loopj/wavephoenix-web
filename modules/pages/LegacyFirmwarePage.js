@@ -1,4 +1,5 @@
-import { versionString } from "../utils.js";
+import { versionString } from "@utils";
+
 import { Page, showPage } from "./Page.js";
 
 export class LegacyFirmwarePage extends Page {
@@ -79,6 +80,7 @@ export class LegacyFirmwarePage extends Page {
         console.error("Error flashing firmware:", error);
         this.updateComplete(false);
       }
+      return;
     }
 
     // Complete the update process

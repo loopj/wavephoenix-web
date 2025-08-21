@@ -1,4 +1,5 @@
-import { versionString } from "../utils.js";
+import { versionString } from "@utils";
+
 import { Page, showPage } from "./Page.js";
 
 export class MenuPage extends Page {

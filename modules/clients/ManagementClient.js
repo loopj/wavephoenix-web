@@ -1,6 +1,4 @@
-import { withTimeout } from "../utils.js";
-
-export const MANAGEMENT_SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
+import { withTimeout } from "@utils";
 
 const SETTINGS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5751);
 const COMMANDS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5752);
@@ -24,7 +22,11 @@ const SETTINGS = {
   PAIRING_BUTTONS: 0x03,
 };
 
+const DFU_CHUNK_SIZE = 64;
+
 export class ManagementClient {
+  static SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
+
   #device = null;
 
   #disconnectCallback = null;
@@ -46,7 +48,7 @@ export class ManagementClient {
     await withTimeout(this.#device.gatt.connect(), timeout);
 
     // Set up characteristics
-    const service = await this.#device.gatt.getPrimaryService(MANAGEMENT_SERVICE_UUID);
+    const service = await this.#device.gatt.getPrimaryService(ManagementClient.SERVICE_UUID);
     this.#settingsChar = await service.getCharacteristic(SETTINGS_CHAR_UUID);
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
@@ -78,84 +80,121 @@ export class ManagementClient {
   // Commands
   //
 
-  async sendCommand(commandCode) {
-    await this.#commandsChar.writeValue(Uint8Array.of(commandCode));
+  async #sendCommand(commandCode) {
+    await this.#commandsChar.writeValueWithResponse(Uint8Array.of(commandCode));
   }
 
-  async beginDFU() {
-    await this.sendCommand(COMMANDS.BEGIN_DFU);
-  }
-
-  async applyDFU() {
-    await this.sendCommand(COMMANDS.APPLY_DFU);
+  async reboot() {
+    try {
+      await this.#sendCommand(COMMANDS.REBOOT);
+    } catch (e) {
+      // Supress GATT errors during reboot, we are expecting a disconnect
+      if (e.name !== "NotSupportedError") {
+        throw e;
+      }
+    }
   }
 
   async leaveSettings() {
-    await this.sendCommand(COMMANDS.LEAVE_SETTINGS);
+    await this.#sendCommand(COMMANDS.LEAVE_SETTINGS);
+  }
+
+  async beginDFU() {
+    await this.#sendCommand(COMMANDS.BEGIN_DFU);
+  }
+
+  async applyDFU() {
+    await this.#sendCommand(COMMANDS.APPLY_DFU);
   }
 
   //
   // Settings
   //
 
-  async readSetting(settingCode) {
-    await this.#settingsChar.writeValue(Uint8Array.of(settingCode));
+  async #readSetting(settingCode) {
+    await this.#settingsChar.writeValueWithResponse(Uint8Array.of(settingCode));
     const value = await this.#settingsChar.readValue();
     return value;
   }
 
-  async writeSetting(settingCode, data) {
+  async #writeSetting(settingCode, data) {
     const buf = new Uint8Array([settingCode, ...data]);
-    await this.#settingsChar.writeValue(buf);
+    await this.#settingsChar.writeValueWithResponse(buf);
   }
 
   async getWirelessChannel() {
-    const wirelessChannelBytes = await this.readSetting(SETTINGS.WIRELESS_CHANNEL);
+    const wirelessChannelBytes = await this.#readSetting(SETTINGS.WIRELESS_CHANNEL);
     return wirelessChannelBytes.getUint8(0);
   }
 
   async setWirelessChannel(channel) {
-    await this.writeSetting(SETTINGS.WIRELESS_CHANNEL, [channel]);
+    await this.#writeSetting(SETTINGS.WIRELESS_CHANNEL, [channel]);
   }
 
   async getControllerType() {
-    const controllerTypeBytes = await this.readSetting(SETTINGS.CONTROLLER_TYPE);
+    const controllerTypeBytes = await this.#readSetting(SETTINGS.CONTROLLER_TYPE);
     return controllerTypeBytes.getUint8(0);
   }
 
   async setControllerType(type) {
-    await this.writeSetting(SETTINGS.CONTROLLER_TYPE, [type]);
+    await this.#writeSetting(SETTINGS.CONTROLLER_TYPE, [type]);
   }
 
   async getPinWirelessId() {
-    const pinWirelessIdBytes = await this.readSetting(SETTINGS.PIN_WIRELESS_ID);
+    const pinWirelessIdBytes = await this.#readSetting(SETTINGS.PIN_WIRELESS_ID);
     return pinWirelessIdBytes.getUint8(0) === 1;
   }
 
   async setPinWirelessId(enabled) {
-    await this.writeSetting(SETTINGS.PIN_WIRELESS_ID, [enabled ? 1 : 0]);
+    await this.#writeSetting(SETTINGS.PIN_WIRELESS_ID, [enabled ? 1 : 0]);
   }
 
   async getPairingButtons() {
-    const pairingButtonsBytes = await this.readSetting(SETTINGS.PAIRING_BUTTONS);
+    const pairingButtonsBytes = await this.#readSetting(SETTINGS.PAIRING_BUTTONS);
     return pairingButtonsBytes.getUint16(0, true);
   }
 
   async setPairingButtons(buttons) {
-    await this.writeSetting(SETTINGS.PAIRING_BUTTONS, [buttons & 0xff, (buttons >> 8) & 0xff]);
+    await this.#writeSetting(SETTINGS.PAIRING_BUTTONS, [buttons & 0xff, (buttons >> 8) & 0xff]);
   }
 
   //
   // Firmware
   //
 
-  async writeFirmware(data, { withResponse = false, wait = 10 } = {}) {
-    if (withResponse) {
-      await this.#firmwareDataChar.writeValueWithResponse(data);
-    } else {
-      await this.#firmwareDataChar.writeValueWithoutResponse(data);
-      await new Promise((r) => setTimeout(r, wait));
+  async writeFirmware(data, { reliable = false, wait = 10, progress, signal } = {}) {
+    // Throw if the operation was already aborted
+    signal?.throwIfAborted();
+
+    // Start the OTA process
+    await this.beginDFU();
+
+    // Write the firmware in chunks
+    const total = data.byteLength;
+    for (let start = 0; start < total; start += DFU_CHUNK_SIZE) {
+      // Handle abort signal
+      signal?.throwIfAborted();
+
+      // Grab the next chunk
+      const chunk = data.slice(start, start + DFU_CHUNK_SIZE);
+
+      // Write the chunk
+      if (reliable) {
+        await this.#firmwareDataChar.writeValueWithResponse(chunk);
+      } else {
+        await this.#firmwareDataChar.writeValueWithoutResponse(chunk);
+        await new Promise((r) => setTimeout(r, wait));
+      }
+
+      // Update progress
+      progress?.((start / total) * 100);
     }
+
+    // One last check for abort signal
+    signal?.throwIfAborted();
+
+    // Finish the OTA process
+    await this.applyDFU();
   }
 
   //

@@ -1,10 +1,8 @@
-import {
-  GECKO_BOOTLOADER_SERVICE_UUID,
-  GeckoBootloaderClient,
-} from "../clients/GeckoBootloaderClient.js";
-import { MANAGEMENT_SERVICE_UUID, ManagementClient } from "../clients/ManagementClient.js";
-import { MIGRATION_SERVICE_UUID, MigrationClient } from "../clients/MigrationClient.js";
-import { TimeoutError } from "../utils.js";
+import { GeckoBootloaderClient } from "@clients/GeckoBootloaderClient.js";
+import { ManagementClient } from "@clients/ManagementClient.js";
+import { MigrationClient } from "@clients/MigrationClient.js";
+import { TimeoutError } from "@utils";
+
 import { Page, showPage } from "./Page.js";
 
 export class ConnectPage extends Page {
@@ -29,9 +27,9 @@ export class ConnectPage extends Page {
       const device = await navigator.bluetooth.requestDevice({
         filters: [{ namePrefix: "WavePhoenix" }],
         optionalServices: [
-          MANAGEMENT_SERVICE_UUID,
-          MIGRATION_SERVICE_UUID,
-          GECKO_BOOTLOADER_SERVICE_UUID,
+          ManagementClient.SERVICE_UUID,
+          MigrationClient.SERVICE_UUID,
+          GeckoBootloaderClient.SERVICE_UUID,
         ],
       });
 
@@ -41,7 +39,7 @@ export class ConnectPage extends Page {
       // Determine if we are in legacy mode, migration mode, or management mode
       const serviceUUID = (await device.gatt.getPrimaryServices()).map((s) => s.uuid)[0];
       switch (serviceUUID) {
-        case MANAGEMENT_SERVICE_UUID:
+        case ManagementClient.SERVICE_UUID:
           // Set up a management client
           this.client = new ManagementClient(device);
           this.client.setDisconnectCallback(() => {
@@ -54,7 +52,7 @@ export class ConnectPage extends Page {
           // Show the management menu
           showPage("menu");
           break;
-        case MIGRATION_SERVICE_UUID:
+        case MigrationClient.SERVICE_UUID:
           // Set up a migration client
           this.client = new MigrationClient(device);
           await this.client.connect();
@@ -62,7 +60,7 @@ export class ConnectPage extends Page {
           // Show the migration page
           showPage("migration");
           break;
-        case GECKO_BOOTLOADER_SERVICE_UUID:
+        case GeckoBootloaderClient.SERVICE_UUID:
           // Set up a Gecko bootloader client
           this.client = new GeckoBootloaderClient(device);
           await this.client.connect();
