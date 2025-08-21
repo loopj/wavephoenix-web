@@ -47,6 +47,10 @@ export class SettingsPage extends Page {
     Page.show("menu");
   };
 
+  clientDisconnected() {
+    Page.show("connect");
+  }
+
   async fetchSettings() {
     this.#wirelessChannel.value = await this.client.getWirelessChannel();
     this.#controllerType.value = await this.client.getControllerType();
@@ -60,7 +64,15 @@ export class SettingsPage extends Page {
   }
 
   onShow() {
+    // Register disconnect handler
+    this.client.addDisconnectHandler(this.clientDisconnected);
+
     // Fetch settings in the background
     this.fetchSettings();
+  }
+
+  onHide() {
+    // Remove disconnect handler
+    this.client?.removeDisconnectHandler(this.clientDisconnected);
   }
 }

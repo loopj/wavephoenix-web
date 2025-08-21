@@ -27,19 +27,27 @@ export class MenuPage extends Page {
   };
 
   exitButtonClicked = async () => {
-    try {
-      // Tell the device to leave management mode
-      await this.client.leaveSettings();
+    // Tell the device to leave management mode
+    await this.client.leaveSettings();
 
-      // Show the connect page
-      Page.show("connect");
-    } catch (_e) {
-      // Exiting management mode on the device immediately disables
-      // Bluetooth, so let's ignore GATT errors
-    }
+    // Show the connect page
+    Page.show("connect");
   };
 
+  clientDisconnected() {
+    Page.show("connect");
+  }
+
   onShow() {
+    // Register disconnect handler
+    this.client.addDisconnectHandler(this.clientDisconnected);
+
+    // Show the current firmware version
     this.#firmwareVersion.textContent = `Current firmware version: ${versionString(this.client.getVersion())}`;
+  }
+
+  onHide() {
+    // Remove disconnect handler
+    this.client?.removeDisconnectHandler(this.clientDisconnected);
   }
 }

@@ -10,7 +10,7 @@
 import { withTimeout } from "@/utils.js";
 
 // Service UUID
-const OTA_SERVICE_UUID = "1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0";
+export const OTA_SERVICE_UUID = "1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0";
 
 // Characteristic UUIDs
 const OTA_CONTROL_UUID = "f7bf3564-fb6d-4e53-88a4-5e37e0326063";
@@ -34,10 +34,6 @@ export class GeckoBootloaderClient {
   #otaDataChar;
   #applicationVersionChar;
 
-  static get SERVICE_UUID() {
-    return OTA_SERVICE_UUID;
-  }
-
   constructor(device) {
     this.#device = device;
   }
@@ -54,8 +50,19 @@ export class GeckoBootloaderClient {
   }
 
   disconnect() {
-    if (!this.#device.gatt.connected) return;
     this.#device.gatt.disconnect();
+  }
+
+  get connected() {
+    return this.#device.gatt.connected ?? false;
+  }
+
+  addDisconnectHandler(handler) {
+    this.#device.addEventListener("gattserverdisconnected", handler);
+  }
+
+  removeDisconnectHandler(handler) {
+    this.#device.removeEventListener("gattserverdisconnected", handler);
   }
 
   async #otaControl(command) {

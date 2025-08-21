@@ -1,6 +1,4 @@
-import { GeckoBootloaderClient } from "@/clients/GeckoBootloaderClient.js";
-import { ManagementClient } from "@/clients/ManagementClient.js";
-import { MigrationClient } from "@/clients/MigrationClient.js";
+import { connectToDevice } from "@/DeviceManager.js";
 
 import { Page } from "./Page.js";
 
@@ -22,58 +20,21 @@ export class ConnectPage extends Page {
     this.#connectBtn.disabled = true;
 
     try {
-      // Prompt user to select a device
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: "WavePhoenix" }],
-        optionalServices: [
-          ManagementClient.SERVICE_UUID,
-          MigrationClient.SERVICE_UUID,
-          GeckoBootloaderClient.SERVICE_UUID,
-        ],
-      });
+      // Connect to the device
+      const { client, mode } = await connectToDevice();
 
-      // Connect to discover services
-      await device.gatt.connect();
+      // Save the client
+      this.client = client;
 
-      // Determine if we are in legacy mode, migration mode, or management mode
-      const serviceUUID = (await device.gatt.getPrimaryServices()).map((s) => s.uuid)[0];
-      switch (serviceUUID) {
-        case ManagementClient.SERVICE_UUID:
-          // Set up a management client
-          this.client = new ManagementClient(device);
-          this.client.setDisconnectCallback(() => {
-            Page.show("connect");
-          });
-
-          // Connect to the management client
-          await this.client.connect();
-
-          // Show the management menu
-          Page.show("menu");
-          break;
-        case MigrationClient.SERVICE_UUID:
-          // Set up a migration client
-          this.client = new MigrationClient(device);
-          await this.client.connect();
-
-          // Show the migration page
-          Page.show("migration");
-          break;
-        case GeckoBootloaderClient.SERVICE_UUID:
-          // Set up a Gecko bootloader client
-          this.client = new GeckoBootloaderClient(device);
-          await this.client.connect();
-
-          // Show the legacy firmware page
-          Page.show("legacy-firmware");
-          break;
-        default:
-          console.error("Unknown service UUID:", serviceUUID);
-          device.gatt.disconnect();
-          break;
+      // Change to the appropriate page
+      if (mode === "management") {
+        Page.show("menu");
+      } else if (mode === "migration") {
+        Page.show("migration");
+      } else if (mode === "legacy") {
+        Page.show("legacy-firmware");
       }
     } catch (e) {
-      // Handle error
       if (e.name === "NotFoundError") {
         console.debug("User cancelled Bluetooth device selection");
       } else if (e.code === "ETIMEDOUT") {

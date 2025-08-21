@@ -7,7 +7,7 @@
 import { withTimeout } from "@/utils.js";
 
 // Service UUID
-const MANAGEMENT_SERVICE_UUID = 0x5750;
+export const MANAGEMENT_SERVICE_UUID = 0x5750;
 
 // Characteristic UUIDs
 const SETTINGS_CHAR_UUID = 0x5751;
@@ -37,8 +37,6 @@ const SETTINGS = {
 export class ManagementClient {
   #device = null;
 
-  #disconnectCallback = null;
-
   #settingsChar = null;
   #commandsChar = null;
   #firmwareDataChar = null;
@@ -46,13 +44,8 @@ export class ManagementClient {
 
   #version = null;
 
-  static get SERVICE_UUID() {
-    return BluetoothUUID.canonicalUUID(MANAGEMENT_SERVICE_UUID);
-  }
-
   constructor(device) {
     this.#device = device;
-    this.#device.addEventListener("gattserverdisconnected", this.gattServerDisconnected);
   }
 
   async connect({ timeout = 15000 } = {}) {
@@ -60,7 +53,7 @@ export class ManagementClient {
     await withTimeout(this.#device.gatt.connect(), timeout);
 
     // Set up characteristics
-    const service = await this.#device.gatt.getPrimaryService(ManagementClient.SERVICE_UUID);
+    const service = await this.#device.gatt.getPrimaryService(MANAGEMENT_SERVICE_UUID);
     this.#settingsChar = await service.getCharacteristic(SETTINGS_CHAR_UUID);
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
@@ -70,7 +63,7 @@ export class ManagementClient {
     await this.fetchVersion();
   }
 
-  async disconnect() {
+  disconnect() {
     this.#device.gatt.disconnect();
   }
 
@@ -78,14 +71,12 @@ export class ManagementClient {
     return this.#device.gatt.connected ?? false;
   }
 
-  gattServerDisconnected = () => {
-    this.#disconnectCallback?.();
-  };
+  addDisconnectHandler(handler) {
+    this.#device.addEventListener("gattserverdisconnected", handler);
+  }
 
-  setDisconnectCallback(callback) {
-    const prevCallback = this.#disconnectCallback;
-    this.#disconnectCallback = callback;
-    return prevCallback;
+  removeDisconnectHandler(handler) {
+    this.#device.removeEventListener("gattserverdisconnected", handler);
   }
 
   //
@@ -108,7 +99,14 @@ export class ManagementClient {
   }
 
   async leaveSettings() {
-    await this.#sendCommand(COMMANDS.LEAVE_SETTINGS);
+    try {
+      await this.#sendCommand(COMMANDS.LEAVE_SETTINGS);
+    } catch (e) {
+      // Supress GATT errors during leave settings, we are expecting a disconnect
+      if (e.name !== "NotSupportedError") {
+        throw e;
+      }
+    }
   }
 
   async beginDFU() {

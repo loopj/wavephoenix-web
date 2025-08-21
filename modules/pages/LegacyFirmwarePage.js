@@ -77,7 +77,7 @@ export class LegacyFirmwarePage extends Page {
       if (e.name === "AbortError") {
         this.onShow();
       } else {
-        console.error("Error flashing firmware:", error);
+        console.error("Error flashing firmware:", e);
         this.updateComplete(false);
       }
       return;
@@ -117,7 +117,14 @@ export class LegacyFirmwarePage extends Page {
     this.#controller.abort();
   };
 
+  clientDisconnected = () => {
+    console.log("TODO: Handle client disconnection");
+  };
+
   onShow() {
+    // Register disconnect handler
+    this.client.addDisconnectHandler(this.clientDisconnected);
+
     // Reset the file input and abort controller
     this.#fileInput.value = "";
     this.#controller = new AbortController();
@@ -151,5 +158,10 @@ export class LegacyFirmwarePage extends Page {
     this.#flashBtn.classList.add("hidden");
     this.#cancelBtn.classList.add("hidden");
     this.#rebootBtn.classList.add("hidden");
+  }
+
+  onHide() {
+    // Remove disconnect handler
+    this.client?.removeDisconnectHandler(this.clientDisconnected);
   }
 }

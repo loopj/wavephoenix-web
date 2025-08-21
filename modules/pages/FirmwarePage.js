@@ -5,6 +5,8 @@ import { Page } from "./Page.js";
 
 export class FirmwarePage extends Page {
   #controller;
+  #rebooting = false;
+  #flashing = false;
   #page = document.getElementById("firmware-page");
   #fileInput = document.getElementById("firmware-file");
 
@@ -147,6 +149,7 @@ export class FirmwarePage extends Page {
     const buffer = await file.arrayBuffer();
 
     try {
+      this.#flashing = true;
       await this.client.writeFirmware(buffer, {
         progress: this.setProgress,
         signal: this.#controller.signal,
@@ -157,55 +160,70 @@ export class FirmwarePage extends Page {
         this.onShow();
       } else {
         // Unexpected error
-        console.error("Error flashing firmware:", e);
-        this.updateComplete(false);
+        this.updateFailed(e);
       }
       return;
+    } finally {
+      this.#flashing = false;
     }
 
-    // Temporarily replace the disconnect handler, we are expecting a disconnect after the reboot
-    const disconnectHandler = this.client.setDisconnectCallback(async () => {
-      this.client.setDisconnectCallback(disconnectHandler);
-      await this.reconnect();
-    });
+    // Request a device reboot
+    this.#rebooting = true;
     await this.client.reboot();
   };
 
-  async reconnect() {
-    // Attempt to reconnect
-    try {
-      await this.client.connect();
-      await this.updateComplete(true);
-      return;
-    } catch (e) {
-      if (e.code !== "ETIMEDOUT") throw e;
-    }
-
-    // Handle reconnection failure
-    await this.client.disconnect();
-    await this.updateComplete(false);
-
-    console.error("Failed to reconnect after firmware update");
-  }
-
-  async updateComplete(success) {
+  async updateComplete() {
     this.setProgress(100);
 
     this.#cancelBtn.classList.add("hidden");
     this.#backBtn.classList.remove("hidden");
-
-    if (!success) {
-      this.#progressInfo.textContent = "Firmware update failed.";
-      return;
-    }
-
     this.#progressInfo.textContent = "Firmware update complete!";
+
     await this.client.fetchVersion();
 
     // TODO: Check if expected version matches actual version
   }
 
+  async updateFailed(e) {
+    if (e) {
+      console.error("Error flashing firmware:", e);
+    }
+
+    this.#cancelBtn.classList.add("hidden");
+    this.#backBtn.classList.remove("hidden");
+    this.#progressInfo.textContent = "Firmware update failed.";
+  }
+
+  clientDisconnected = async () => {
+    // Client disconnected during flashing firmware, let GATT failure handle state
+    if (this.#flashing) {
+      this.#flashing = false;
+      return;
+    }
+
+    // Client disconnected during expected reboot, attempting to reconnect
+    if (this.#rebooting) {
+      this.#rebooting = false;
+
+      // Attempt to reconnect
+      try {
+        await this.client.connect();
+        await this.updateComplete();
+      } catch (e) {
+        await this.client.disconnect();
+        await this.updateFailed();
+        console.error("Failed to reconnect after firmware update", e);
+      }
+      return;
+    }
+
+    Page.show("connect");
+  };
+
   onShow() {
+    // Register disconnect handler
+    this.client.addDisconnectHandler(this.clientDisconnected);
+
     // Reset the file input and abort controller
     this.#fileInput.value = "";
     this.#controller = new AbortController();
@@ -229,5 +247,8 @@ export class FirmwarePage extends Page {
     this.#cancelBtn.classList.add("hidden");
   }
 
-  onHide() {}
+  onHide() {
+    // Remove disconnect handler
+    this.client?.removeDisconnectHandler(this.clientDisconnected);
+  }
 }
