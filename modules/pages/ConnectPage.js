@@ -23,8 +23,9 @@ export class ConnectPage extends Page {
       // Connect to the device
       const { client, mode } = await connectToDevice();
 
-      // Save the client
+      // Save the client and device mode
       this.client = client;
+      this.mode = mode;
 
       // Change to the appropriate page
       if (mode === "management") {

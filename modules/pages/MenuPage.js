@@ -43,7 +43,10 @@ export class MenuPage extends Page {
     this.client.addDisconnectHandler(this.clientDisconnected);
 
     // Show the current firmware version
-    this.#firmwareVersion.textContent = `Current firmware version: ${versionString(this.client.getVersion())}`;
+    (async () => {
+      const version = await this.client.getVersion();
+      this.#firmwareVersion.textContent = `Current firmware version: ${versionString(version)}`;
+    })();
   }
 
   onHide() {

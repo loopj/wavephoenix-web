@@ -34,6 +34,14 @@ export class Page {
     return Page.#state.client;
   }
 
+  set mode(mode) {
+    Page.#state.mode = mode;
+  }
+
+  get mode() {
+    return Page.#state.mode;
+  }
+
   show() {
     this.el.classList.remove("hidden");
     this.onShow();

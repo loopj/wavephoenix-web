@@ -42,8 +42,6 @@ export class ManagementClient {
   #firmwareDataChar = null;
   #versionChar = null;
 
-  #version = null;
-
   constructor(device) {
     this.#device = device;
   }
@@ -58,9 +56,6 @@ export class ManagementClient {
     this.#commandsChar = await service.getCharacteristic(COMMANDS_CHAR_UUID);
     this.#firmwareDataChar = await service.getCharacteristic(FIRMWARE_DATA_CHAR_UUID);
     this.#versionChar = await service.getCharacteristic(VERSION_UUID);
-
-    // Pre-fetch current firmware version
-    await this.fetchVersion();
   }
 
   disconnect() {
@@ -211,17 +206,13 @@ export class ManagementClient {
   // Version
   //
 
-  async fetchVersion() {
+  async getVersion() {
     const version = await this.#versionChar.readValue();
-    this.#version = {
+    return {
       major: version.getUint8(3),
       minor: version.getUint8(2),
       patch: version.getUint8(1),
       build: version.getUint8(0),
     };
-  }
-
-  getVersion() {
-    return this.#version;
   }
 }

@@ -179,8 +179,6 @@ export class FirmwarePage extends Page {
     this.#backBtn.classList.remove("hidden");
     this.#progressInfo.textContent = "Firmware update complete!";
 
-    await this.client.fetchVersion();
-
     // TODO: Check if expected version matches actual version
   }
 
