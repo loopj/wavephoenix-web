@@ -1,9 +1,13 @@
 import { withTimeout } from "@utils";
 
-export class MigrationClient {
-  static SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5760);
+const MIGRATION_SERVICE_UUID = 0x5760;
 
+export class MigrationClient {
   #device = null;
+
+  static get SERVICE_UUID() {
+    return BluetoothUUID.canonicalUUID(MIGRATION_SERVICE_UUID);
+  }
 
   constructor(device) {
     this.#device = device;

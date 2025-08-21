@@ -7,13 +7,13 @@
 import { withTimeout } from "@utils";
 
 // Service UUID
-const MANAGEMENT_SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
+const MANAGEMENT_SERVICE_UUID = 0x5750;
 
 // Characteristic UUIDs
-const SETTINGS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5751);
-const COMMANDS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5752);
-const FIRMWARE_DATA_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5753);
-const VERSION_UUID = BluetoothUUID.canonicalUUID(0x5754);
+const SETTINGS_CHAR_UUID = 0x5751;
+const COMMANDS_CHAR_UUID = 0x5752;
+const FIRMWARE_DATA_CHAR_UUID = 0x5753;
+const VERSION_UUID = 0x5754;
 
 // Commands
 const COMMANDS = {
@@ -35,8 +35,6 @@ const SETTINGS = {
 };
 
 export class ManagementClient {
-  static SERVICE_UUID = MANAGEMENT_SERVICE_UUID;
-
   #device = null;
 
   #disconnectCallback = null;
@@ -47,6 +45,10 @@ export class ManagementClient {
   #versionChar = null;
 
   #version = null;
+
+  static get SERVICE_UUID() {
+    return BluetoothUUID.canonicalUUID(MANAGEMENT_SERVICE_UUID);
+  }
 
   constructor(device) {
     this.#device = device;

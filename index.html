@@ -1,402 +1,503 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WavePhoenix Web Firmware Updater</title>
-  <style>
-    html {
-      height: 100%;
-    }
-
-    body {
-      background: #121212;
-      color: #fff;
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      background-image: url('images/background.gif');
-      background-size: cover;
-      background-position: center;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    body::before,
-    body::after {
-      content: "";
-      flex-grow: 1;
-    }
-
-    a {
-      color: #dddddd;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    .header-bar {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      color: white;
-      text-align: center;
-      padding: 15px 0;
-      z-index: 1000;
-    }
-
-    .footer-bar {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      color: white;
-      text-align: center;
-      padding: 8px 0;
-      font-size: 14px;
-    }
-
-    .card {
-      width: 450px;
-      margin: 20px auto;
-      padding: 15px;
-      background: rgba(0, 0, 0, 0.75);
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-
-    /* On small screens, override to 90vw */
-    @media (max-width: 600px) {
-      .card {
-        width: 90vw;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WavePhoenix Web</title>
+    <style>
+      html {
+        height: 100%;
       }
-    }
 
-    .card-header {
-      background: #333;
-      font-weight: bold;
-      padding: 8px;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 14px;
-      letter-spacing: 1px;
-    }
+      body {
+        background: #121212;
+        color: #fff;
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url("images/background.gif");
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
 
-    .status-text,
-    #instruction-text {
-      text-align: center;
-      margin: 30px 0;
-      font-size: 16px;
-      line-height: 1.5;
-    }
+      body::before,
+      body::after {
+        content: "";
+        flex-grow: 1;
+      }
 
-    button {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      font-weight: bold;
-      font-size: 16px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-    }
+      a {
+        color: #dddddd;
+        font-weight: bold;
+        text-decoration: none;
+      }
 
-    #connect-btn,
-    #flash-btn,
-    #reboot-btn,
-    #try-again-btn {
-      background-color: #4caf50;
-      color: white;
-    }
+      /* Helper classes */
+      .hidden {
+        display: none !important;
+      }
 
-    #connect-btn:hover,
-    #flash-btn:hover,
-    #reboot-btn:hover,
-    #try-again-btn:hover {
-      background-color: #66bb6a;
-    }
+      /* Buttons */
+      button {
+        font-family: inherit;
+        font-size: 1rem;
+        padding: 0.75em 1.5em;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        display: inline-block;
+        text-align: center;
+        min-width: 0;
+        font-weight: bold;
+      }
 
-    #select-file-btn {
-      background-color: #2196f3;
-      color: white;
-    }
+      button.primary {
+        background: #8e287b;
+        color: #fff;
+      }
+      button.primary:hover {
+        background: color-mix(in srgb, #8e287b 90%, white 10%);
+      }
 
-    #select-file-btn:hover {
-      background-color: #42a5f5;
-    }
+      button.secondary {
+        background: #e9d5ff;
+        color: #8e287b;
+      }
+      button.secondary:hover {
+        background: color-mix(in srgb, #e9d5ff 70%, white 30%);
+      }
 
-    #progress {
-      width: 100%;
-      background: #333;
-      margin-top: 20px;
-      height: 40px;
-      border-radius: 20px;
-      overflow: hidden;
-      display: none;
-      position: relative;
-    }
+      button.outline {
+        background: none;
+        color: #f3e8ff;
+        border: 1px solid #f3e8ff66;
+        text-decoration: none;
+      }
+      button.outline:hover {
+        background: #e9d5ff22;
+      }
 
-    #progress-bar {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(to right, #4caf50, #66bb6a);
-      transition: width 0.3s ease;
-      border-radius: 20px 0 0 20px;
-    }
+      button.loading {
+        position: relative;
+        color: transparent !important;
+      }
 
-    #progress-text {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      text-align: center;
-      line-height: 40px;
-      font-size: 18px;
-      color: white;
-      pointer-events: none;
-    }
-  </style>
-</head>
+      button.loading::before {
+        content: "";
+        display: inline-block;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        margin-left: -9px;
+        margin-top: -10px;
+        border: 2px solid #fff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
 
-<body>
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-  <div class="header-bar">
-    <img src="images/logo.svg" height="20" alt="WavePhoenix Logo">
-  </div>
+      /* Header and Footer */
+      .header-bar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        text-align: center;
+        padding: 15px 0;
+        z-index: 1000;
+      }
 
-  <div class="card">
-    <div id="connection-status" class="card-header" style="color: #ff9800;">NOT CONNECTED</div>
+      .footer-bar {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 14px;
+      }
 
-    <div id="instruction-text" class="status-text"></div>
+      /* Cards */
+      .card {
+        position: relative;
+        width: 500px;
+        margin: 20px auto;
+        background: rgba(0, 0, 0, 0.75);
+        border-radius: 15px;
+        box-sizing: border-box;
+      }
 
-    <button id="connect-btn">Connect to Device</button>
+      .card.dragging::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 15px;
+        z-index: 1;
+      }
 
-    <input type="file" id="firmware-file" accept=".gbl" style="display:none;">
-    <button id="select-file-btn" style="display:none;">Choose Firmware File</button>
+      .card p {
+        margin: 25px 0;
+        line-height: 1.5;
+        text-align: center;
+      }
 
-    <button id="flash-btn" style="display:none;">Flash Firmware</button>
+      @media (max-width: 600px) {
+        .card {
+          width: 90vw;
+        }
+      }
 
-    <div id="progress">
-      <div id="progress-bar"></div>
-      <div id="progress-text"></div>
+      .card-title {
+        font-weight: bold;
+        margin: 25px 15px;
+        text-align: center;
+        font-size: 14px;
+        letter-spacing: 1px;
+      }
+
+      .card-title.not-supported {
+        color: #f44336;
+      }
+
+      .card-title.not-connected {
+        color: #ff9800;
+      }
+
+      .card-title.connected {
+        color: #4caf50;
+      }
+
+      .card-body {
+        margin: 25px 15px;
+        box-sizing: border-box;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 15px;
+        margin: 15px;
+      }
+
+      .card-actions button {
+        flex: 1 1 0;
+        margin-top: 0;
+      }
+
+      /* Progress bars */
+      .progress-bar {
+        position: relative;
+        width: 100%;
+        height: 30px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #00000044;
+      }
+
+      .progress-bar-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(to right, #4caf50, #66bb6a);
+      }
+
+      .progress-bar-text {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        text-align: center;
+        line-height: 30px;
+        font-size: 14px;
+        color: white;
+        pointer-events: none;
+      }
+
+      /* TODO: Make more generic */
+      button.menu-item {
+        display: block;
+        width: 100%;
+        margin: 0.5em 0;
+      }
+
+      .button-menu button {
+        display: block;
+        width: 100%;
+      }
+
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 15px 0;
+        border-bottom: 1px solid #5b5b5b;
+      }
+
+      .settings-row:last-child {
+        border-bottom: none;
+      }
+
+      .settings-row label {
+        color: #ccc;
+        font-size: 17px;
+        flex: 1;
+        text-align: left;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header-bar">
+      <img src="images/logo.svg" height="20" alt="WavePhoenix Logo" />
     </div>
 
-    <button id="reboot-btn" style="display:none;">Reboot Device</button>
-    <button id="try-again-btn" style="display:none;">Try Again</button>
-  </div>
+    <!-- Not Supported Page -->
+    <div id="not-supported-page" class="card hidden">
+      <div class="card-title not-supported">NOT SUPPORTED</div>
 
-  <div class="footer-bar">
-    Part of the <a href="https://github.com/loopj/wavephoenix">WavePhoenix</a> project by
-    <a href="https://loopj.com">loopj</a>.
-    Art by <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
-  </div>
+      <div class="card-body">
+        <p>Your browser does not support Web Bluetooth.</p>
+        <p>Please try using <b>Google Chrome</b> or a compatible browser.</p>
+      </div>
+    </div>
 
-  <script>
-    // Constants
-    const DEVICE_NAME = "WavePhoenix";
-    const OTA_SERVICE_UUID = "1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0";
-    const OTA_CONTROL_UUID = "f7bf3564-fb6d-4e53-88a4-5e37e0326063";
-    const OTA_DATA_UUID = "984227f3-34fc-4045-a5d0-2c581f81a153";
-    const APPLICATION_VERSION_UUID = "0d77cc11-4ac1-49f2-bfa9-cd96ac7a92f8";
+    <!-- Welcome Page -->
+    <div id="connect-page" class="card hidden">
+      <div class="card-title not-connected">NOT CONNECTED</div>
 
-    const START_OTA = new Uint8Array([0x00]);
-    const FINISH_OTA = new Uint8Array([0x03]);
-    const CHUNK_SIZE = 64;
+      <div class="card-body">
+        <p id="connect-info">Welcome to the WavePhoenix Web!</p>
+        <p>Hold the pair button on your WavePhoenix for 3 seconds to enter management mode.</p>
+        <p>
+          The LED will begin fading on and off to indicate management mode is active. Then click
+          <em>Connect to Device</em> below.
+        </p>
+      </div>
 
-    // Instruction messages
-    const initialInstructionText = `
-      Welcome to the WavePhoenix web firmware updater!<br><br>
-      Hold the pair button on your WavePhoenix for 3 seconds to enter bootloader mode.<br><br>
-      The LED will turn off to indicate bootloader mode is active.
-      Then click <i>Connect to Device</i> below.
-    `;
+      <div class="card-actions">
+        <button id="connect-btn" class="primary">Connect to Device</button>
+      </div>
+    </div>
 
-    // DOM elements
-    const connectionStatus = document.getElementById('connection-status');
-    const instructionText = document.getElementById('instruction-text');
-    const connectBtn = document.getElementById('connect-btn');
-    const firmwareInput = document.getElementById('firmware-file');
-    const selectFileBtn = document.getElementById('select-file-btn');
-    const flashBtn = document.getElementById('flash-btn');
-    const rebootBtn = document.getElementById('reboot-btn');
-    const tryAgainBtn = document.getElementById('try-again-btn');
-    const progress = document.getElementById('progress');
-    const progressBar = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
+    <!-- Main Menu -->
+    <div id="menu-page" class="card hidden">
+      <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
 
-    let device = null;
-    let server = null;
-    let controlChar = null;
-    let dataChar = null;
-    let firmwareFile = null;
+      <p id="menu-firmware-version"></p>
 
-    // Set initial instructions at startup
-    instructionText.innerHTML = initialInstructionText;
+      <div class="card-body">
+        <button id="menu-settings-btn" class="primary menu-item">Device Settings</button>
+        <button id="menu-firmware-btn" class="primary menu-item">Firmware Update</button>
+      </div>
 
-    // Web Bluetooth support check
-    if (!navigator.bluetooth) {
-      connectionStatus.textContent = "NOT SUPPORTED";
-      connectionStatus.style.color = "#f44336"; // Red
-      instructionText.innerHTML = `
-        Your browser does not support Web Bluetooth.<br><br>
-        Please try using <b>Google Chrome</b> or a compatible browser.
-      `;
-      connectBtn.style.display = "none";
-    }
+      <div class="card-actions">
+        <button id="menu-exit-btn" class="secondary">Exit Management Mode</button>
+      </div>
+    </div>
 
-    connectBtn.addEventListener('click', async function () {
-      try {
-        device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: DEVICE_NAME }],
-          optionalServices: [OTA_SERVICE_UUID]
-        });
-      } catch (error) {
-        return;
-      }
+    <!-- Settings Page -->
+    <div id="settings-page" class="card hidden">
+      <div class="card-title connected">DEVICE SETTINGS</div>
 
-      instructionText.textContent = "Connecting to device...";
+      <div id="settings-rows" class="card-body">
+        <div class="settings-row">
+          <label for="settings-wireless-channel">Wireless Channel</label>
+          <select id="settings-wireless-channel">
+            <option value="0">1</option>
+            <option value="1">2</option>
+            <option value="2">3</option>
+            <option value="3">4</option>
+            <option value="4">5</option>
+            <option value="5">6</option>
+            <option value="6">7</option>
+            <option value="7">8</option>
+            <option value="8">9</option>
+            <option value="9">10</option>
+            <option value="10">11</option>
+            <option value="11">12</option>
+            <option value="12">13</option>
+            <option value="13">14</option>
+            <option value="14">15</option>
+            <option value="15">16</option>
+          </select>
+        </div>
 
-      try {
-        device.addEventListener('gattserverdisconnected', onDisconnected);
+        <div class="settings-row">
+          <label for="settings-controller-type">Controller Type</label>
+          <select id="settings-controller-type">
+            <option value="0">WaveBird</option>
+            <option value="1">Wired Controller</option>
+            <option value="2">Wired Controller (No Motor)</option>
+          </select>
+        </div>
 
-        server = await device.gatt.connect();
+        <div class="settings-row">
+          <label for="settings-pin-wireless-id">Wireless ID Pinning</label>
+          <input type="checkbox" id="settings-pin-wireless-id" />
+        </div>
 
-        const service = await server.getPrimaryService(OTA_SERVICE_UUID);
-        controlChar = await service.getCharacteristic(OTA_CONTROL_UUID);
-        dataChar = await service.getCharacteristic(OTA_DATA_UUID);
+        <div class="settings-row">
+          <label for="settings-pairing-buttons">Pairing Buttons</label>
+          <select id="settings-pairing-buttons" multiple class="hidden">
+            <option value="0">Left</option>
+            <option value="1">Right</option>
+            <option value="2">Down</option>
+            <option value="3">Up</option>
+            <option value="4">Z</option>
+            <option value="5">R</option>
+            <option value="6">L</option>
+            <option value="7">A</option>
+            <option value="8">B</option>
+            <option value="9">X</option>
+            <option value="10">Y</option>
+            <option value="11">Start</option>
+          </select>
+        </div>
+      </div>
 
-        let appVersion = "(unknown)";
-        try {
-          const versionChar = await service.getCharacteristic(APPLICATION_VERSION_UUID);
-          const versionData = await versionChar.readValue();
-          appVersion = formatVersionData(versionData);
-        } catch (e) {
-          console.warn('Could not read firmware version:', e);
+      <div class="card-actions">
+        <button id="settings-back-btn" class="secondary">Back</button>
+      </div>
+    </div>
+
+    <!-- Firmware Update Page -->
+    <div id="firmware-page" class="card hidden">
+      <div class="card-title connected">FIRMWARE UPDATE</div>
+
+      <input type="file" id="firmware-file" accept=".bin" class="hidden" />
+
+      <div id="firmware-file-selection-area" class="card-body">
+        <p id="firmware-file-selection-info"></p>
+        <p>
+          <button id="firmware-choose-btn" class="primary">Choose Firmware File</button>
+        </p>
+      </div>
+
+      <div id="firmware-file-selected-area" class="card-body hidden">
+        <p id="firmware-file-selected-info"></p>
+        <p>
+          <button id="firmware-change-btn" class="outline">Change File</button>
+        </p>
+      </div>
+
+      <div id="firmware-progress-area" class="card-body hidden">
+        <p id="firmware-progress-info"></p>
+        <div id="firmware-progress-bar" class="progress-bar">
+          <div class="progress-bar-fill"></div>
+          <div class="progress-bar-text">0%</div>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button id="firmware-back-btn" class="secondary">Back</button>
+        <button id="firmware-flash-btn" class="primary hidden">Flash Firmware</button>
+        <button id="firmware-cancel-btn" class="secondary hidden">Cancel</button>
+      </div>
+    </div>
+
+    <div id="migration-page" class="card hidden">
+      <div class="card-title connected">MIGRATION</div>
+
+      <div class="card-body">
+        <p>Bootloader migration firmware detected.</p>
+      </div>
+
+      <div class="card-actions">
+        <button id="migration-back-btn" class="secondary">Back</button>
+      </div>
+    </div>
+
+    <div id="legacy-firmware-page" class="card hidden">
+      <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
+
+      <input type="file" id="legacy-firmware-file" accept=".gbl" class="hidden" />
+
+      <div id="legacy-firmware-selection-area" class="card-body">
+        <p id="legacy-firmware-selection-info"></p>
+        <p>Select a firmware file to continue.</p>
+      </div>
+
+      <div id="legacy-firmware-selected-area" class="card-body hidden">
+        <p>Firmware file ready.</p>
+        <p>Click <em>Flash Firmware</em> to continue.</p>
+      </div>
+
+      <div id="legacy-firmware-progress-area" class="card-body hidden">
+        <p id="legacy-firmware-progress-info"></p>
+        <div id="legacy-firmware-progress-bar" class="progress-bar">
+          <div class="progress-bar-fill"></div>
+          <div class="progress-bar-text">0%</div>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button id="legacy-firmware-choose-btn" class="primary">Choose Firmware File</button>
+        <button id="legacy-firmware-back-btn" class="secondary hidden">Back</button>
+        <button id="legacy-firmware-flash-btn" class="primary hidden">Flash Firmware</button>
+        <button id="legacy-firmware-cancel-btn" class="secondary hidden">Cancel</button>
+        <button id="legacy-firmware-reboot-btn" class="primary hidden">Reboot Device</button>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      Part of the
+      <a href="https://github.com/loopj/wavephoenix">WavePhoenix</a> project by <a href="https://loopj.com">loopj</a>.
+      Art by <a href="https://www.instagram.com/pixelbenny/">Pixel Benny</a>.
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/modules/",
+          "@clients/": "/modules/clients/",
+          "@pages/": "/modules/pages/",
+          "@images/": "/modules/images/",
+          "@utils": "/modules/utils.js"
         }
-
-        connectionStatus.textContent = "WAVEPHOENIX CONNECTED";
-        connectionStatus.style.color = "#4caf50";
-        instructionText.innerHTML = `Current firmware version: ${appVersion}.<br><br>Select a firmware file to continue.`;
-
-        connectBtn.style.display = "none";
-        selectFileBtn.style.display = "block";
-
-      } catch (error) {
-        console.error("Failed to connect:", error);
-        instructionText.textContent = "Connection failed. Please try again.";
-        connectBtn.style.display = "none";
-        tryAgainBtn.style.display = "block";
       }
-    });
+    </script>
 
-    selectFileBtn.addEventListener('click', function () {
-      firmwareInput.click();
-    });
+    <script type="module">
+      import { ConnectPage } from "@pages/ConnectPage.js";
+      import { FirmwarePage } from "@pages/FirmwarePage.js";
+      import { LegacyFirmwarePage } from "@pages/LegacyFirmwarePage.js";
+      import { MenuPage } from "@pages/MenuPage.js";
+      import { MigrationPage } from "@pages/MigrationPage.js";
+      import { NotSupportedPage } from "@pages/NotSupportedPage.js";
+      import { registerPage, showPage } from "@pages/Page.js";
+      import { SettingsPage } from "@pages/SettingsPage.js";
 
-    firmwareInput.addEventListener('change', function () {
-      if (firmwareInput.files.length > 0) {
-        firmwareFile = firmwareInput.files[0];
-        instructionText.innerHTML = "Firmware file ready.<br><br>Click <i>Flash Firmware</i> to continue.";
-        selectFileBtn.style.display = "none";
-        flashBtn.style.display = "block";
+      // Check if the browser supports Web Bluetooth
+      if (!navigator.bluetooth) {
+        registerPage("not-supported", new NotSupportedPage());
+        showPage("not-supported");
+      } else {
+        registerPage("connect", new ConnectPage());
+        registerPage("firmware", new FirmwarePage());
+        registerPage("legacy-firmware", new LegacyFirmwarePage());
+        registerPage("menu", new MenuPage());
+        registerPage("migration", new MigrationPage());
+        registerPage("settings", new SettingsPage());
+        showPage("connect");
       }
-    });
-
-    flashBtn.addEventListener('click', async function () {
-      if (!firmwareFile) return;
-
-      try {
-        instructionText.textContent = "Uploading firmware...";
-        flashBtn.style.display = "none";
-        progress.style.display = "block";
-
-        await controlChar.writeValue(START_OTA);
-        await delay(200);
-
-        const firmwareData = await firmwareFile.arrayBuffer();
-        const totalSize = firmwareData.byteLength;
-        let offset = 0;
-
-        while (offset < totalSize) {
-          const chunkEnd = Math.min(offset + CHUNK_SIZE, totalSize);
-          const chunk = firmwareData.slice(offset, chunkEnd);
-          await dataChar.writeValueWithResponse(chunk);
-          offset = chunkEnd;
-          updateProgress((offset / totalSize) * 100);
-          await delay(4);
-        }
-
-        await delay(500);
-        await controlChar.writeValue(FINISH_OTA);
-        await delay(500);
-
-        progress.style.display = "none";
-        instructionText.textContent = "Firmware upload successful! Click Reboot to finish.";
-        rebootBtn.style.display = "block";
-
-      } catch (error) {
-        console.error(error);
-        instructionText.textContent = "Upload failed. Please try again.";
-        tryAgainBtn.style.display = "block";
-      }
-    });
-
-    rebootBtn.addEventListener('click', function () {
-      if (device && device.gatt.connected) {
-        device.gatt.disconnect();
-      }
-    });
-
-    tryAgainBtn.addEventListener('click', function () {
-      instructionText.innerHTML = initialInstructionText;
-      connectionStatus.textContent = "NOT CONNECTED";
-      connectionStatus.style.color = "#ff9800";
-
-      connectBtn.style.display = "block";
-      selectFileBtn.style.display = "none";
-      flashBtn.style.display = "none";
-      rebootBtn.style.display = "none";
-      tryAgainBtn.style.display = "none";
-      progress.style.display = "none";
-      updateProgress(0);
-    });
-
-    function updateProgress(percent) {
-      progressBar.style.width = percent.toFixed(1) + "%";
-      progressText.textContent = percent.toFixed(0) + "%";
-    }
-
-    function delay(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    function formatVersionData(dataView) {
-      if (dataView.byteLength < 3) return "(invalid)";
-      const major = dataView.getUint8(dataView.byteLength - 1);
-      const minor = dataView.getUint8(dataView.byteLength - 2);
-      const patch = dataView.getUint8(dataView.byteLength - 3);
-      return `${major}.${minor}.${patch}`;
-    }
-
-    function onDisconnected() {
-      connectionStatus.textContent = "NOT CONNECTED";
-      connectionStatus.style.color = "#ff9800";
-      instructionText.innerHTML = initialInstructionText;
-
-      connectBtn.style.display = "block";
-      selectFileBtn.style.display = "none";
-      flashBtn.style.display = "none";
-      rebootBtn.style.display = "none";
-      tryAgainBtn.style.display = "none";
-      progress.style.display = "none";
-      updateProgress(0);
-    }
-  </script>
-
-</body>
-
+    </script>
+  </body>
 </html>

@@ -28,13 +28,15 @@ const COMMANDS = {
 };
 
 export class GeckoBootloaderClient {
-  static SERVICE_UUID = OTA_SERVICE_UUID;
-
   #device;
 
   #otaControlChar;
   #otaDataChar;
   #applicationVersionChar;
+
+  static get SERVICE_UUID() {
+    return OTA_SERVICE_UUID;
+  }
 
   constructor(device) {
     this.#device = device;
