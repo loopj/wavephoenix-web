@@ -141,7 +141,7 @@ export class LegacyFirmwarePage extends Page {
 
     // Fetch current firmware version
     (async () => {
-      const version = await this.client.getVersion();
+      const version = await this.client.getApplicationVersion();
       if (version) {
         this.#selectionInfo.textContent = `Current firmware version: ${versionString(version)}`;
       } else {

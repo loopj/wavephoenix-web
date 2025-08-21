@@ -32,6 +32,9 @@ export class GeckoBootloaderClient {
 
   #otaControlChar;
   #otaDataChar;
+  #appLoaderVersionChar;
+  #otaVersionChar;
+  #geckoBootloaderVersionChar;
   #applicationVersionChar;
 
   constructor(device) {
@@ -46,6 +49,9 @@ export class GeckoBootloaderClient {
     const service = await this.#device.gatt.getPrimaryService(OTA_SERVICE_UUID);
     this.#otaControlChar = await service.getCharacteristic(OTA_CONTROL_UUID);
     this.#otaDataChar = await service.getCharacteristic(OTA_DATA_UUID);
+    this.#appLoaderVersionChar = await service.getCharacteristic(APPLOADER_VERSION_UUID);
+    this.#otaVersionChar = await service.getCharacteristic(OTA_VERSION_UUID);
+    this.#geckoBootloaderVersionChar = await service.getCharacteristic(GECKO_BOOTLOADER_VERSION_UUID);
     this.#applicationVersionChar = await service.getCharacteristic(APPLICATION_VERSION_UUID);
   }
 
@@ -65,7 +71,7 @@ export class GeckoBootloaderClient {
     this.#device.removeEventListener("gattserverdisconnected", handler);
   }
 
-  async #otaControl(command) {
+  async otaControl(command) {
     await this.#otaControlChar.writeValueWithResponse(Uint8Array.of(command));
   }
 
@@ -74,7 +80,7 @@ export class GeckoBootloaderClient {
     signal?.throwIfAborted();
 
     // Start the OTA process
-    await this.#otaControl(COMMANDS.START_OTA);
+    await this.otaControl(COMMANDS.START_OTA);
 
     // Write the firmware in chunks
     const total = data.byteLength;
@@ -101,10 +107,33 @@ export class GeckoBootloaderClient {
     signal?.throwIfAborted();
 
     // Finish the OTA process
-    await this.#otaControl(COMMANDS.FINISH_OTA);
+    await this.otaControl(COMMANDS.FINISH_OTA);
   }
 
-  async getVersion() {
+  async getOtaVersion() {
+    return (await this.#otaVersionChar.readValue()).getUint8(0);
+  }
+
+  async getAppLoaderVersion() {
+    const version = await this.#appLoaderVersionChar.readValue();
+    return {
+      major: version.getUint16(0, true),
+      minor: version.getUint16(2, true),
+      patch: version.getUint16(4, true),
+      build: version.getUint16(6, true),
+    };
+  }
+
+  async getGeckoBootloaderVersion() {
+    const version = await this.#geckoBootloaderVersionChar.readValue();
+    return {
+      major: version.getUint8(3),
+      minor: version.getUint8(2),
+      customer: version.getUint16(0, true),
+    };
+  }
+
+  async getApplicationVersion() {
     const version = await this.#applicationVersionChar.readValue();
     return {
       major: version.getUint8(3),
