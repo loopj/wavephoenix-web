@@ -1,10 +1,21 @@
+/**
+ * WavePhoenix Management Client
+ *
+ * Implements our custom management protocol over Bluetooth.
+ */
+
 import { withTimeout } from "@utils";
 
+// Service UUID
+const MANAGEMENT_SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
+
+// Characteristic UUIDs
 const SETTINGS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5751);
 const COMMANDS_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5752);
 const FIRMWARE_DATA_CHAR_UUID = BluetoothUUID.canonicalUUID(0x5753);
 const VERSION_UUID = BluetoothUUID.canonicalUUID(0x5754);
 
+// Commands
 const COMMANDS = {
   REBOOT: 0x00,
   ENTER_SETTINGS: 0x01,
@@ -15,6 +26,7 @@ const COMMANDS = {
   APPLY_DFU: 0x06,
 };
 
+// Settings
 const SETTINGS = {
   WIRELESS_CHANNEL: 0x00,
   CONTROLLER_TYPE: 0x01,
@@ -22,10 +34,8 @@ const SETTINGS = {
   PAIRING_BUTTONS: 0x03,
 };
 
-const DFU_CHUNK_SIZE = 64;
-
 export class ManagementClient {
-  static SERVICE_UUID = BluetoothUUID.canonicalUUID(0x5750);
+  static SERVICE_UUID = MANAGEMENT_SERVICE_UUID;
 
   #device = null;
 
@@ -162,7 +172,7 @@ export class ManagementClient {
   // Firmware
   //
 
-  async writeFirmware(data, { reliable = false, wait = 10, progress, signal } = {}) {
+  async writeFirmware(data, { reliable = false, wait = 10, chunkSize = 64, progress, signal } = {}) {
     // Throw if the operation was already aborted
     signal?.throwIfAborted();
 
@@ -171,12 +181,12 @@ export class ManagementClient {
 
     // Write the firmware in chunks
     const total = data.byteLength;
-    for (let start = 0; start < total; start += DFU_CHUNK_SIZE) {
+    for (let start = 0; start < total; start += chunkSize) {
       // Handle abort signal
       signal?.throwIfAborted();
 
       // Grab the next chunk
-      const chunk = data.slice(start, start + DFU_CHUNK_SIZE);
+      const chunk = data.slice(start, start + chunkSize);
 
       // Write the chunk
       if (reliable) {

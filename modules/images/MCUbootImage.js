@@ -1,11 +1,9 @@
+const MCUBOOT_IMAGE_MAGIC = 0x96f3b83d;
+
 /**
  * MCUboot image format
- *
  * See https://docs.mcuboot.com/design.html
  */
-
-const IMAGE_MAGIC = 0x96f3b83d;
-
 export class MCUbootImage {
   constructor(arrayBuffer) {
     this.data = new Uint8Array(arrayBuffer);
@@ -17,7 +15,7 @@ export class MCUbootImage {
   }
 
   isValid() {
-    return this.getMagicNumber() === IMAGE_MAGIC;
+    return this.getMagicNumber() === MCUBOOT_IMAGE_MAGIC;
   }
 
   getVersion() {

@@ -7,7 +7,7 @@ import { Page, showPage } from "./Page.js";
 
 export class ConnectPage extends Page {
   #connectBtn = document.getElementById("connect-btn");
-  #connectError = document.getElementById("connect-error");
+  #connectInfo = document.getElementById("connect-info");
 
   constructor() {
     // Register the page
@@ -78,12 +78,9 @@ export class ConnectPage extends Page {
       if (e.name === "NotFoundError") {
         console.debug("User cancelled Bluetooth device selection");
       } else if (e instanceof TimeoutError) {
-        this.#connectError.textContent = "Connection timed out. Please try again.";
-        this.#connectError.classList.remove("hidden");
+        this.#connectInfo.textContent = "Connection timed out. Please try again.";
       } else {
-        this.#connectError.textContent = "Bluetooth connection failed. Please try again.";
-        this.#connectError.classList.remove("hidden");
-
+        this.#connectInfo.textContent = "Bluetooth connection failed. Please try again.";
         console.error("Bluetooth connection failed", e);
       }
     }
@@ -91,9 +88,5 @@ export class ConnectPage extends Page {
     // Hide loading state
     this.#connectBtn.classList.remove("loading");
     this.#connectBtn.disabled = false;
-  };
-
-  onShow = () => {
-    this.#connectError.classList.add("hidden");
   };
 }
