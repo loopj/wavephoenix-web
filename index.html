@@ -386,7 +386,7 @@
   <div id="firmware-page" class="card hidden">
     <div class="card-title connected">FIRMWARE UPDATE</div>
 
-    <input type="file" id="firmware-file" accept=".bin" class="hidden">
+    <input type="file" id="firmware-file" class="hidden">
 
     <div id="firmware-file-selection-area" class="card-body">
       <p id="firmware-file-selection-info"></p>
@@ -414,6 +414,7 @@
       <button id="firmware-back-btn" class="secondary">Back</button>
       <button id="firmware-flash-btn" class="primary hidden">Flash Firmware</button>
       <button id="firmware-cancel-btn" class="secondary hidden">Cancel</button>
+      <button id="firmware-reboot-btn" class="primary hidden">Reboot Device</button>
     </div>
   </div>
 
@@ -427,39 +428,6 @@
 
     <div class="card-actions">
       <button id="migration-back-btn" class="secondary">Back</button>
-    </div>
-  </div>
-
-  <!-- Legacy Firmware Update Page -->
-  <div id="legacy-firmware-page" class="card hidden">
-    <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
-
-    <input type="file" id="legacy-firmware-file" accept=".gbl" class="hidden">
-
-    <div id="legacy-firmware-selection-area" class="card-body">
-      <p id="legacy-firmware-selection-info"></p>
-      <p>Select a firmware file to continue.</p>
-    </div>
-
-    <div id="legacy-firmware-selected-area" class="card-body hidden">
-      <p>Firmware file ready.</p>
-      <p>Click <em>Flash Firmware</em> to continue.</p>
-    </div>
-
-    <div id="legacy-firmware-progress-area" class="card-body hidden">
-      <p id="legacy-firmware-progress-info"></p>
-      <div id="legacy-firmware-progress-bar" class="progress-bar">
-        <div class="progress-bar-fill"></div>
-        <div class="progress-bar-text">0%</div>
-      </div>
-    </div>
-
-    <div class="card-actions">
-      <button id="legacy-firmware-choose-btn" class="primary">Choose Firmware File</button>
-      <button id="legacy-firmware-back-btn" class="secondary hidden">Back</button>
-      <button id="legacy-firmware-flash-btn" class="primary hidden">Flash Firmware</button>
-      <button id="legacy-firmware-cancel-btn" class="secondary hidden">Cancel</button>
-      <button id="legacy-firmware-reboot-btn" class="primary hidden">Reboot Device</button>
     </div>
   </div>
 
@@ -480,7 +448,6 @@
   <script type="module">
     import { ConnectPage } from "@/pages/ConnectPage.js";
     import { FirmwarePage } from "@/pages/FirmwarePage.js";
-    import { LegacyFirmwarePage } from "@/pages/LegacyFirmwarePage.js";
     import { MenuPage } from "@/pages/MenuPage.js";
     import { MigrationPage } from "@/pages/MigrationPage.js";
     import { NotSupportedPage } from "@/pages/NotSupportedPage.js";
@@ -494,7 +461,6 @@
     } else {
       Page.register("connect", new ConnectPage());
       Page.register("firmware", new FirmwarePage());
-      Page.register("legacy-firmware", new LegacyFirmwarePage());
       Page.register("menu", new MenuPage());
       Page.register("migration", new MigrationPage());
       Page.register("settings", new SettingsPage());

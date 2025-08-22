@@ -122,4 +122,14 @@ export class GeckoBootloaderImage {
   getApplicationVersion() {
     return this.applicationInfoTag?.version;
   }
+
+  getApplicationVersionSemantic() {
+    const version = this.getApplicationVersion();
+    return {
+      major: (version >> 24) & 0xff,
+      minor: (version >> 16) & 0xff,
+      patch: (version >> 8) & 0xff,
+      build: version & 0xff,
+    };
+  }
 }

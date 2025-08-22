@@ -33,7 +33,7 @@ export class ConnectPage extends Page {
       } else if (mode === "migration") {
         Page.show("migration");
       } else if (mode === "legacy") {
-        Page.show("legacy-firmware");
+        Page.show("menu");
       }
     } catch (e) {
       if (e.name === "NotFoundError") {

@@ -167,7 +167,7 @@ export class ManagementClient {
   // Firmware
   //
 
-  async writeFirmware(data, { reliable = false, wait = 10, chunkSize = 64, progress, signal } = {}) {
+  async flashFirmware(data, { reliable = false, wait = 10, chunkSize = 64, progress, signal } = {}) {
     // Throw if the operation was already aborted
     signal?.throwIfAborted();
 

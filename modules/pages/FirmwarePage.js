@@ -1,3 +1,4 @@
+import { GeckoBootloaderImage } from "@/images/GeckoBootloaderImage.js";
 import { MCUbootImage } from "@/images/MCUbootImage.js";
 import { versionString } from "@/utils.js";
 
@@ -14,6 +15,7 @@ export class FirmwarePage extends Page {
   #backBtn = document.getElementById("firmware-back-btn");
   #flashBtn = document.getElementById("firmware-flash-btn");
   #cancelBtn = document.getElementById("firmware-cancel-btn");
+  #rebootBtn = document.getElementById("firmware-reboot-btn");
 
   // File selection area
   #fileSelectionArea = document.getElementById("firmware-file-selection-area");
@@ -39,6 +41,7 @@ export class FirmwarePage extends Page {
     this.#backBtn.addEventListener("click", this.backButtonClicked);
     this.#flashBtn.addEventListener("click", this.flashButtonClicked);
     this.#cancelBtn.addEventListener("click", this.cancelButtonClicked);
+    this.#rebootBtn.addEventListener("click", this.rebootButtonClicked);
     this.#fileInput.addEventListener("change", this.fileInputChanged);
     this.#chooseBtn.addEventListener("click", this.chooseButtonClicked);
     this.#changeBtn.addEventListener("click", this.changeButtonClicked);
@@ -66,6 +69,10 @@ export class FirmwarePage extends Page {
 
   cancelButtonClicked = () => {
     this.#controller.abort();
+  };
+
+  rebootButtonClicked = () => {
+    this.client.disconnect();
   };
 
   pageDragEnter = (event) => {
@@ -106,17 +113,30 @@ export class FirmwarePage extends Page {
 
     // Parse the firmware image
     const file = this.#fileInput.files[0];
-    const firmwareImage = new MCUbootImage(await file.arrayBuffer());
+    const buffer = await file.arrayBuffer();
 
-    // Check if the firmware image is valid
-    if (!firmwareImage.isValid()) {
-      this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected.`;
-      return;
+    if (this.mode === "legacy") {
+      const firmwareImage = new GeckoBootloaderImage(buffer);
+      if (!firmwareImage.isValid()) {
+        this.#fileSelectionInfo.textContent = `Invalid Gecko Bootloader firmware selected.`;
+        return;
+      }
+
+      // Show the selected firmware information
+      const version = firmwareImage.getApplicationVersionSemantic();
+      this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${versionString(version)}.`;
+    } else {
+      // Check if the firmware image is valid
+      const firmwareImage = new MCUbootImage(buffer);
+      if (!firmwareImage.isValid()) {
+        this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected.`;
+        return;
+      }
+
+      // Show the selected firmware information
+      const version = firmwareImage.getVersion();
+      this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${versionString(version)}.`;
     }
-
-    // Show the selected firmware information
-    const version = versionString(firmwareImage.getVersion());
-    this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${version}`;
 
     // Toggle the "firmware selected" area
     this.#fileSelectionArea.classList.add("hidden");
@@ -150,7 +170,7 @@ export class FirmwarePage extends Page {
 
     try {
       this.#flashing = true;
-      await this.client.writeFirmware(buffer, {
+      await this.client.flashFirmware(buffer, {
         progress: this.setProgress,
         signal: this.#controller.signal,
       });
@@ -167,19 +187,30 @@ export class FirmwarePage extends Page {
       this.#flashing = false;
     }
 
-    // Request a device reboot
-    this.#rebooting = true;
-    await this.client.reboot();
+    if (this.mode === "legacy") {
+      // Legacy mode will reboot the device when the bluetooth client disconnects
+      this.updateComplete();
+    } else {
+      // Request a device reboot
+      this.#rebooting = true;
+      await this.client.reboot();
+    }
   };
 
   async updateComplete() {
     this.setProgress(100);
 
     this.#cancelBtn.classList.add("hidden");
-    this.#backBtn.classList.remove("hidden");
     this.#progressInfo.textContent = "Firmware update complete!";
 
-    // TODO: Check if expected version matches actual version
+    // In legacy mode we need to prompt to reboot
+    // In management mode, we have already rebooted into the new version by this point
+    if (this.mode === "legacy") {
+      this.#rebootBtn.classList.remove("hidden");
+    } else {
+      this.#backBtn.classList.remove("hidden");
+      // TODO: Check if expected version matches actual version
+    }
   }
 
   async updateFailed(e) {
@@ -222,8 +253,11 @@ export class FirmwarePage extends Page {
     // Register disconnect handler
     this.client.addDisconnectHandler(this.clientDisconnected);
 
-    // Reset the file input and abort controller
+    // Reset the file input
     this.#fileInput.value = "";
+    this.#fileInput.accept = this.mode === "legacy" ? ".gbl" : ".bin";
+
+    // Reset the abort controller
     this.#controller = new AbortController();
 
     // Show only the file selection area
@@ -243,6 +277,7 @@ export class FirmwarePage extends Page {
     this.#backBtn.classList.remove("hidden");
     this.#flashBtn.classList.add("hidden");
     this.#cancelBtn.classList.add("hidden");
+    this.#rebootBtn.classList.add("hidden");
   }
 
   onHide() {

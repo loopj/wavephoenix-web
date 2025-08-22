@@ -75,7 +75,7 @@ export class GeckoBootloaderClient {
     await this.#otaControlChar.writeValueWithResponse(Uint8Array.of(command));
   }
 
-  async writeFirmware(data, { reliable = false, wait = 10, chunkSize = 64, progress, signal } = {}) {
+  async flashFirmware(data, { reliable = false, wait = 10, chunkSize = 64, progress, signal } = {}) {
     // Handle abort signal
     signal?.throwIfAborted();
 
@@ -134,6 +134,11 @@ export class GeckoBootloaderClient {
   }
 
   async getApplicationVersion() {
+    const version = await this.#applicationVersionChar.readValue();
+    return version.getUint32(0, true);
+  }
+
+  async getApplicationVersionSemantic() {
     const version = await this.#applicationVersionChar.readValue();
     return {
       major: version.getUint8(3),

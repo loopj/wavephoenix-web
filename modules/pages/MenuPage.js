@@ -44,9 +44,25 @@ export class MenuPage extends Page {
 
     // Show the current firmware version
     (async () => {
-      const version = await this.client.getVersion();
-      this.#firmwareVersion.textContent = `Current firmware version: ${versionString(version)}`;
+      if (this.mode === "legacy") {
+        const version = await this.client.getApplicationVersionSemantic();
+        if (!version.major && !version.minor && !version.patch && !version.build) {
+          this.#firmwareVersion.textContent = "No application firmware currently installed.";
+        } else {
+          this.#firmwareVersion.textContent = `Current firmware version: ${versionString(version)}.`;
+        }
+      } else {
+        const version = await this.client.getVersion();
+        this.#firmwareVersion.textContent = `Current firmware version: ${versionString(version)}.`;
+      }
     })();
+
+    // Hide settings button in legacy mode
+    if (this.mode === "legacy") {
+      this.#settingsBtn.classList.add("hidden");
+    } else {
+      this.#settingsBtn.classList.remove("hidden");
+    }
   }
 
   onHide() {
