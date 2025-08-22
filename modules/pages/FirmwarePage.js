@@ -1,8 +1,12 @@
 import { GeckoBootloaderImage } from "@/images/GeckoBootloaderImage.js";
 import { MCUbootImage } from "@/images/MCUbootImage.js";
-import { versionString } from "@/utils.js";
+import { bytesToHex, versionString } from "@/utils.js";
 
 import { Page } from "./Page.js";
+
+// GBL product IDs
+const RECEIVER_APP_PRODUCT_ID = "cb39eacc719044358f77fced4d0b96eb";
+const MIGRATION_APP_PRODUCT_ID = "d94787830b316b07c387878eb96c77a0";
 
 export class FirmwarePage extends Page {
   #controller;
@@ -118,13 +122,20 @@ export class FirmwarePage extends Page {
     if (this.mode === "legacy") {
       const firmwareImage = new GeckoBootloaderImage(buffer);
       if (!firmwareImage.isValid()) {
-        this.#fileSelectionInfo.textContent = `Invalid Gecko Bootloader firmware selected.`;
+        this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected`;
         return;
       }
 
-      // Show the selected firmware information
-      const version = firmwareImage.getApplicationVersionSemantic();
-      this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${versionString(version)}.`;
+      const productId = bytesToHex(firmwareImage.getApplicationProductId());
+      if (productId === MIGRATION_APP_PRODUCT_ID) {
+        this.#fileSelectedInfo.textContent = `Selected WavePhoenix bootloader migration firmware.`;
+      } else if (productId === RECEIVER_APP_PRODUCT_ID) {
+        const version = firmwareImage.getApplicationVersionSemantic();
+        this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${versionString(version)}.`;
+      } else {
+        this.#fileSelectedInfo.textContent = `Invalid WavePhoenix firmware selected`;
+        return;
+      }
     } else {
       // Check if the firmware image is valid
       const firmwareImage = new MCUbootImage(buffer);

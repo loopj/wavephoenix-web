@@ -119,6 +119,10 @@ export class GeckoBootloaderImage {
     return this.headerTag && this.endTag && this.validateCRC32();
   }
 
+  getApplicationProductId() {
+    return this.applicationInfoTag?.productId;
+  }
+
   getApplicationVersion() {
     return this.applicationInfoTag?.version;
   }
