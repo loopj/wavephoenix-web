@@ -7,7 +7,6 @@ export class MigrationClient {
 
   constructor(device) {
     this.#device = device;
-    this.#device.addEventListener("gattserverdisconnected", this.gattServerDisconnected);
   }
 
   async connect({ timeout = 15000 } = {}) {
@@ -19,8 +18,6 @@ export class MigrationClient {
   }
 
   disconnect() {
-    if (!this.connected) return;
-
     this.#device.gatt.disconnect();
   }
 
@@ -28,7 +25,11 @@ export class MigrationClient {
     return this.#device.gatt.connected ?? false;
   }
 
-  gattServerDisconnected = () => {
-    // Handle disconnection logic here
-  };
+  addDisconnectHandler(handler) {
+    this.#device.addEventListener("gattserverdisconnected", handler);
+  }
+
+  removeDisconnectHandler(handler) {
+    this.#device.removeEventListener("gattserverdisconnected", handler);
+  }
 }

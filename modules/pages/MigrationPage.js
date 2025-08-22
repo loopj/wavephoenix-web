@@ -11,10 +11,24 @@ export class MigrationPage extends Page {
     this.#backBtn.addEventListener("click", this.backButtonClicked);
   }
 
-  backButtonClicked = () => {};
+  backButtonClicked = () => {
+    this.client.disconnect();
+  };
+
+  clientDisconnected() {
+    Page.show("connect");
+  }
 
   onShow() {
+    // Register disconnect handler
+    this.client.addDisconnectHandler(this.clientDisconnected);
+
     // Reset button states
     this.#backBtn.classList.remove("hidden");
+  }
+
+  onHide() {
+    // Remove disconnect handler
+    this.client?.removeDisconnectHandler(this.clientDisconnected);
   }
 }
