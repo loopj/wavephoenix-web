@@ -1,5 +1,5 @@
 import { GeckoBootloaderImage } from 'https://esm.sh/gbl-tools';
-import { MCUbootImage } from '@/images/MCUbootImage.js';
+import { MCUbootImage } from '@/MCUbootImage.js';
 import { bytesToHex, semverToString, uint32ToSemver } from '@/utils.js';
 
 import { Page } from './Page.js';

@@ -1,6 +1,6 @@
 import { GBL_OTA_SERVICE_UUID, GeckoBootloaderClient } from 'https://esm.sh/gbl-tools';
-import { MANAGEMENT_SERVICE_UUID, ManagementClient } from '@/clients/ManagementClient.js';
-import { MIGRATION_SERVICE_UUID, MigrationClient } from '@/clients/MigrationClient.js';
+import { MANAGEMENT_SERVICE_UUID, ManagementClient } from '@/ManagementClient.js';
+import { MIGRATION_SERVICE_UUID, MigrationClient } from '@/MigrationClient.js';
 
 import { withTimeout } from '@/utils.js';
 
