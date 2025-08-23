@@ -1,4 +1,4 @@
-import { Page } from './Page.js';
+import { Page } from '@/Page.js';
 
 export class SettingsPage extends Page {
   #backBtn = document.getElementById('settings-back-btn');

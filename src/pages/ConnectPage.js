@@ -1,6 +1,6 @@
 import { connectToDevice } from '@/DeviceManager.js';
 
-import { Page } from './Page.js';
+import { Page } from '@/Page.js';
 
 export class ConnectPage extends Page {
   #connectBtn = document.getElementById('connect-btn');

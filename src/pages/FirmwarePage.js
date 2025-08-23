@@ -1,8 +1,7 @@
 import { GeckoBootloaderImage } from 'https://esm.sh/gbl-tools';
 import { MCUbootImage } from '@/MCUbootImage.js';
+import { Page } from '@/Page.js';
 import { bytesToHex, semverToString, uint32ToSemver } from '@/utils.js';
-
-import { Page } from './Page.js';
 
 // GBL product IDs
 const RECEIVER_APP_PRODUCT_ID = 'cb39eacc719044358f77fced4d0b96eb';

@@ -1,6 +1,5 @@
+import { Page } from '@/Page.js';
 import { semverToString, uint32ToSemver } from '@/utils.js';
-
-import { Page } from './Page.js';
 
 export class MenuPage extends Page {
   #firmwareVersion = document.getElementById('menu-firmware-version');
