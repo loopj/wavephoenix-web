@@ -1,4 +1,4 @@
-import { withTimeout } from "@/utils.js";
+import { withTimeout } from '@/utils.js';
 
 export const MIGRATION_SERVICE_UUID = 0x5760;
 
@@ -26,10 +26,10 @@ export class MigrationClient {
   }
 
   addDisconnectHandler(handler) {
-    this.#device.addEventListener("gattserverdisconnected", handler);
+    this.#device.addEventListener('gattserverdisconnected', handler);
   }
 
   removeDisconnectHandler(handler) {
-    this.#device.removeEventListener("gattserverdisconnected", handler);
+    this.#device.removeEventListener('gattserverdisconnected', handler);
   }
 }

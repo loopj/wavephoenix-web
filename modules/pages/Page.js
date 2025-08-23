@@ -43,12 +43,12 @@ export class Page {
   }
 
   show() {
-    this.el.classList.remove("hidden");
+    this.el.classList.remove('hidden');
     this.onShow();
   }
 
   hide() {
-    this.el.classList.add("hidden");
+    this.el.classList.add('hidden');
     this.onHide();
   }
 

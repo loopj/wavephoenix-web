@@ -1,23 +1,23 @@
-import { Page } from "./Page.js";
+import { Page } from './Page.js';
 
 export class SettingsPage extends Page {
-  #backBtn = document.getElementById("settings-back-btn");
+  #backBtn = document.getElementById('settings-back-btn');
 
-  #wirelessChannel = document.getElementById("settings-wireless-channel");
-  #controllerType = document.getElementById("settings-controller-type");
-  #pinWirelessId = document.getElementById("settings-pin-wireless-id");
-  #pairingButtons = document.getElementById("settings-pairing-buttons");
+  #wirelessChannel = document.getElementById('settings-wireless-channel');
+  #controllerType = document.getElementById('settings-controller-type');
+  #pinWirelessId = document.getElementById('settings-pin-wireless-id');
+  #pairingButtons = document.getElementById('settings-pairing-buttons');
 
   constructor() {
     // Register the page
-    super("settings-page");
+    super('settings-page');
 
     // Hook up event listeners
-    this.#backBtn.addEventListener("click", this.backButtonClicked);
-    this.#wirelessChannel.addEventListener("change", this.wirelessChannelChanged);
-    this.#controllerType.addEventListener("change", this.controllerTypeChanged);
-    this.#pinWirelessId.addEventListener("change", this.wirelessIdChanged);
-    this.#pairingButtons.addEventListener("change", this.pairingButtonsChanged);
+    this.#backBtn.addEventListener('click', this.backButtonClicked);
+    this.#wirelessChannel.addEventListener('change', this.wirelessChannelChanged);
+    this.#controllerType.addEventListener('change', this.controllerTypeChanged);
+    this.#pinWirelessId.addEventListener('change', this.wirelessIdChanged);
+    this.#pairingButtons.addEventListener('change', this.pairingButtonsChanged);
   }
 
   wirelessChannelChanged = async () => {
@@ -44,11 +44,11 @@ export class SettingsPage extends Page {
   };
 
   backButtonClicked = () => {
-    Page.show("menu");
+    Page.show('menu');
   };
 
   clientDisconnected() {
-    Page.show("connect");
+    Page.show('connect');
   }
 
   async fetchSettings() {

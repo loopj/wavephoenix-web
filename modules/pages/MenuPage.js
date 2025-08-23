@@ -1,29 +1,29 @@
-import { versionString } from "@/utils.js";
+import { semverToString, uint32ToSemver } from '@/utils.js';
 
-import { Page } from "./Page.js";
+import { Page } from './Page.js';
 
 export class MenuPage extends Page {
-  #firmwareVersion = document.getElementById("menu-firmware-version");
-  #settingsBtn = document.getElementById("menu-settings-btn");
-  #firmwareBtn = document.getElementById("menu-firmware-btn");
-  #exitBtn = document.getElementById("menu-exit-btn");
+  #firmwareVersion = document.getElementById('menu-firmware-version');
+  #settingsBtn = document.getElementById('menu-settings-btn');
+  #firmwareBtn = document.getElementById('menu-firmware-btn');
+  #exitBtn = document.getElementById('menu-exit-btn');
 
   constructor() {
     // Register the page
-    super("menu-page");
+    super('menu-page');
 
     // Hook up event listeners
-    this.#settingsBtn.addEventListener("click", this.settingsButtonClicked);
-    this.#firmwareBtn.addEventListener("click", this.firmwareButtonClicked);
-    this.#exitBtn.addEventListener("click", this.exitButtonClicked);
+    this.#settingsBtn.addEventListener('click', this.settingsButtonClicked);
+    this.#firmwareBtn.addEventListener('click', this.firmwareButtonClicked);
+    this.#exitBtn.addEventListener('click', this.exitButtonClicked);
   }
 
   settingsButtonClicked = async () => {
-    Page.show("settings");
+    Page.show('settings');
   };
 
   firmwareButtonClicked = async () => {
-    Page.show("firmware");
+    Page.show('firmware');
   };
 
   exitButtonClicked = async () => {
@@ -31,11 +31,11 @@ export class MenuPage extends Page {
     await this.client.leaveSettings();
 
     // Show the connect page
-    Page.show("connect");
+    Page.show('connect');
   };
 
   clientDisconnected() {
-    Page.show("connect");
+    Page.show('connect');
   }
 
   onShow() {
@@ -44,24 +44,25 @@ export class MenuPage extends Page {
 
     // Show the current firmware version
     (async () => {
-      if (this.mode === "legacy") {
-        const version = await this.client.getApplicationVersionSemantic();
-        if (!version.major && !version.minor && !version.patch && !version.build) {
-          this.#firmwareVersion.textContent = "No application firmware currently installed.";
+      if (this.mode === 'legacy') {
+        const version = await this.client.getApplicationVersion();
+        if (!version) {
+          this.#firmwareVersion.textContent = 'No application firmware currently installed.';
         } else {
-          this.#firmwareVersion.textContent = `Current firmware version: ${versionString(version)}.`;
+          const semver = uint32ToSemver(version);
+          this.#firmwareVersion.textContent = `Current firmware version: ${semverToString(semver)}.`;
         }
       } else {
         const version = await this.client.getVersion();
-        this.#firmwareVersion.textContent = `Current firmware version: ${versionString(version)}.`;
+        this.#firmwareVersion.textContent = `Current firmware version: ${semverToString(version)}.`;
       }
     })();
 
     // Hide settings button in legacy mode
-    if (this.mode === "legacy") {
-      this.#settingsBtn.classList.add("hidden");
+    if (this.mode === 'legacy') {
+      this.#settingsBtn.classList.add('hidden');
     } else {
-      this.#settingsBtn.classList.remove("hidden");
+      this.#settingsBtn.classList.remove('hidden');
     }
   }
 

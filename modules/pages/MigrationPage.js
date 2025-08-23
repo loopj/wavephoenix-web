@@ -1,14 +1,14 @@
-import { Page } from "./Page.js";
+import { Page } from './Page.js';
 
 export class MigrationPage extends Page {
-  #backBtn = document.getElementById("migration-back-btn");
+  #backBtn = document.getElementById('migration-back-btn');
 
   constructor() {
     // Register the page
-    super("migration-page");
+    super('migration-page');
 
     // Hook up event listeners
-    this.#backBtn.addEventListener("click", this.backButtonClicked);
+    this.#backBtn.addEventListener('click', this.backButtonClicked);
   }
 
   backButtonClicked = () => {
@@ -16,7 +16,7 @@ export class MigrationPage extends Page {
   };
 
   clientDisconnected() {
-    Page.show("connect");
+    Page.show('connect');
   }
 
   onShow() {
@@ -24,7 +24,7 @@ export class MigrationPage extends Page {
     this.client.addDisconnectHandler(this.clientDisconnected);
 
     // Reset button states
-    this.#backBtn.classList.remove("hidden");
+    this.#backBtn.classList.remove('hidden');
   }
 
   onHide() {

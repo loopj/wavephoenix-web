@@ -1,20 +1,20 @@
-import { GeckoBootloaderClient, OTA_SERVICE_UUID } from "@/clients/GeckoBootloaderClient.js";
-import { MANAGEMENT_SERVICE_UUID, ManagementClient } from "@/clients/ManagementClient.js";
-import { MIGRATION_SERVICE_UUID, MigrationClient } from "@/clients/MigrationClient.js";
+import { GBL_OTA_SERVICE_UUID, GeckoBootloaderClient } from 'https://esm.sh/gbl-tools';
+import { MANAGEMENT_SERVICE_UUID, ManagementClient } from '@/clients/ManagementClient.js';
+import { MIGRATION_SERVICE_UUID, MigrationClient } from '@/clients/MigrationClient.js';
 
-import { withTimeout } from "@/utils.js";
+import { withTimeout } from '@/utils.js';
 
 export async function connectToDevice() {
   // Map UUIDs to device modes
   const UUID_TO_DEVICE_MODE = {
-    [BluetoothUUID.canonicalUUID(MANAGEMENT_SERVICE_UUID)]: "management",
-    [BluetoothUUID.canonicalUUID(MIGRATION_SERVICE_UUID)]: "migration",
-    [OTA_SERVICE_UUID]: "legacy",
+    [BluetoothUUID.canonicalUUID(MANAGEMENT_SERVICE_UUID)]: 'management',
+    [BluetoothUUID.canonicalUUID(MIGRATION_SERVICE_UUID)]: 'migration',
+    [GBL_OTA_SERVICE_UUID]: 'legacy',
   };
 
   // Prompt the user to select a Bluetooth device
   const device = await navigator.bluetooth.requestDevice({
-    filters: [{ namePrefix: "WavePhoenix" }],
+    filters: [{ namePrefix: 'WavePhoenix' }],
     optionalServices: Object.keys(UUID_TO_DEVICE_MODE),
   });
 
@@ -27,13 +27,13 @@ export async function connectToDevice() {
   // Create the appropriate client based on the mode
   let client;
   const mode = UUID_TO_DEVICE_MODE[serviceUUID];
-  if (mode === "management") {
+  if (mode === 'management') {
     client = new ManagementClient(device);
     await client.connect();
-  } else if (mode === "migration") {
+  } else if (mode === 'migration') {
     client = new MigrationClient(device);
     await client.connect();
-  } else if (mode === "legacy") {
+  } else if (mode === 'legacy') {
     client = new GeckoBootloaderClient(device);
     await client.connect();
   } else {

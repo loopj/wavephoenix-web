@@ -4,7 +4,7 @@
  * Implements our custom management protocol over Bluetooth.
  */
 
-import { withTimeout } from "@/utils.js";
+import { withTimeout } from '@/utils.js';
 
 // Service UUID
 export const MANAGEMENT_SERVICE_UUID = 0x5750;
@@ -67,11 +67,11 @@ export class ManagementClient {
   }
 
   addDisconnectHandler(handler) {
-    this.#device.addEventListener("gattserverdisconnected", handler);
+    this.#device.addEventListener('gattserverdisconnected', handler);
   }
 
   removeDisconnectHandler(handler) {
-    this.#device.removeEventListener("gattserverdisconnected", handler);
+    this.#device.removeEventListener('gattserverdisconnected', handler);
   }
 
   //
@@ -87,7 +87,7 @@ export class ManagementClient {
       await this.#sendCommand(COMMANDS.REBOOT);
     } catch (e) {
       // Supress GATT errors during reboot, we are expecting a disconnect
-      if (e.name !== "NotSupportedError") {
+      if (e.name !== 'NotSupportedError') {
         throw e;
       }
     }
@@ -98,7 +98,7 @@ export class ManagementClient {
       await this.#sendCommand(COMMANDS.LEAVE_SETTINGS);
     } catch (e) {
       // Supress GATT errors during leave settings, we are expecting a disconnect
-      if (e.name !== "NotSupportedError") {
+      if (e.name !== 'NotSupportedError') {
         throw e;
       }
     }

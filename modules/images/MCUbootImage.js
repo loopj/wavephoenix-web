@@ -33,6 +33,6 @@ export class MCUbootImage {
   }
 
   async calculateSHA256() {
-    return await crypto.subtle.digest("SHA-256", this.data);
+    return await crypto.subtle.digest('SHA-256', this.data);
   }
 }

@@ -1,7 +1,7 @@
-import { Page } from "./Page.js";
+import { Page } from './Page.js';
 
 export class NotSupportedPage extends Page {
   constructor() {
-    super("not-supported-page");
+    super('not-supported-page');
   }
 }
