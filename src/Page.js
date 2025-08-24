@@ -1,6 +1,5 @@
 export class Page {
   static #pages = {};
-  static #state = {};
 
   static register(name, inst) {
     Page.#pages[name] = inst;
@@ -26,28 +25,16 @@ export class Page {
     this.el = document.getElementById(elementId);
   }
 
-  set client(client) {
-    Page.#state.client = client;
-  }
-
-  get client() {
-    return Page.#state.client;
-  }
-
-  set mode(mode) {
-    Page.#state.mode = mode;
-  }
-
-  get mode() {
-    return Page.#state.mode;
-  }
-
   show() {
+    if (!this.el.classList.contains('hidden')) return;
+
     this.el.classList.remove('hidden');
     this.onShow();
   }
 
   hide() {
+    if (this.el.classList.contains('hidden')) return;
+
     this.el.classList.add('hidden');
     this.onHide();
   }

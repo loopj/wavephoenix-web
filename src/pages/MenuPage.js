@@ -1,3 +1,4 @@
+import { connection } from '@/connection.js';
 import { Page } from '@/Page.js';
 import { semverToString, uint32ToSemver } from '@/utils.js';
 
@@ -27,7 +28,11 @@ export class MenuPage extends Page {
 
   exitButtonClicked = async () => {
     // Tell the device to leave management mode
-    await this.client.leaveSettings();
+    if (connection.mode === 'management') {
+      await connection.client.leaveSettings();
+    } else {
+      await connection.client.disconnect();
+    }
 
     // Show the connect page
     Page.show('connect');
@@ -39,26 +44,28 @@ export class MenuPage extends Page {
 
   onShow() {
     // Register disconnect handler
-    this.client.addDisconnectHandler(this.clientDisconnected);
+    connection.client.addDisconnectHandler(this.clientDisconnected);
+
+    this.#firmwareVersion.textContent = 'Current firmware version: x.x.x';
 
     // Show the current firmware version
     (async () => {
-      if (this.mode === 'legacy') {
-        const version = await this.client.getApplicationVersion();
+      if (connection.mode === 'legacy') {
+        const version = await connection.client.getApplicationVersion();
         if (!version) {
           this.#firmwareVersion.textContent = 'No application firmware currently installed.';
         } else {
           const semver = uint32ToSemver(version);
-          this.#firmwareVersion.textContent = `Current firmware version: ${semverToString(semver)}.`;
+          this.#firmwareVersion.textContent = `Current firmware version: ${semverToString(semver)}`;
         }
       } else {
-        const version = await this.client.getVersion();
-        this.#firmwareVersion.textContent = `Current firmware version: ${semverToString(version)}.`;
+        const version = await connection.client.getVersion();
+        this.#firmwareVersion.textContent = `Current firmware version: ${semverToString(version)}`;
       }
     })();
 
     // Hide settings button in legacy mode
-    if (this.mode === 'legacy') {
+    if (connection.mode === 'legacy') {
       this.#settingsBtn.classList.add('hidden');
     } else {
       this.#settingsBtn.classList.remove('hidden');
@@ -67,6 +74,6 @@ export class MenuPage extends Page {
 
   onHide() {
     // Remove disconnect handler
-    this.client?.removeDisconnectHandler(this.clientDisconnected);
+    connection.client?.removeDisconnectHandler(this.clientDisconnected);
   }
 }

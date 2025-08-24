@@ -145,20 +145,8 @@
       box-sizing: border-box;
     }
 
-    .card.dragging::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 15px;
-      z-index: 1;
-    }
-
     .card p {
-      margin: 25px 0;
+      margin: 15px 0;
       line-height: 1.5;
       text-align: center;
     }
@@ -190,7 +178,7 @@
     }
 
     .card-body {
-      margin: 25px 15px;
+      margin: 0 15px;
       box-sizing: border-box;
     }
 
@@ -203,6 +191,49 @@
     .card-actions button {
       flex: 1 1 0;
       margin-top: 0;
+    }
+
+    /* File target */
+    .file-target {
+      position: relative;
+      border: 2px dashed rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .file-target.active::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: inherit;
+      z-index: 1;
+    }
+
+    .upload-icon {
+      width: 80px;
+    }
+
+    .file-selected {
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .file-info {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .file-name {
+      text-align: center;
+      font-family: monospace;
+      font-weight: bold;
     }
 
     /* Progress bars */
@@ -305,7 +336,7 @@
   <div id="menu-page" class="card hidden">
     <div class="card-title connected">WAVEPHOENIX CONNECTED</div>
 
-    <p id="menu-firmware-version"></p>
+    <p id="menu-firmware-version">Current firmware version: x.x.x</p>
 
     <div class="card-body">
       <button id="menu-settings-btn" class="primary menu-item">Device Settings</button>
@@ -388,18 +419,15 @@
 
     <input type="file" id="firmware-file" class="hidden">
 
-    <div id="firmware-file-selection-area" class="card-body">
-      <p id="firmware-file-selection-info"></p>
-      <p>
-        <button id="firmware-choose-btn" class="primary">Choose Firmware File</button>
-      </p>
-    </div>
-
-    <div id="firmware-file-selected-area" class="card-body hidden">
-      <p id="firmware-file-selected-info"></p>
-      <p>
-        <button id="firmware-change-btn" class="outline">Change File</button>
-      </p>
+    <div id="firmware-file-area" class="card-body">
+      <div id="firmware-file-target" class="file-target">
+        <p><img src="images/upload.svg" class="upload-icon"></p>
+        <p id="firmware-file-prompt"></p>
+      </div>
+      <div id="firmware-file-selected" class="file-selected hidden">
+        <div id="firmware-file-info" class="file-info"></div>
+        <div id="firmware-file-name" class="file-name"></div>
+      </div>
     </div>
 
     <div id="firmware-progress-area" class="card-body hidden">
@@ -442,7 +470,8 @@
   <script type="importmap">
     {
       "imports": {
-        "@/": "/src/"
+        "@/": "/src/",
+        "gbl-tools": "https://esm.sh/gbl-tools"
       }
     }
   </script>

@@ -7,13 +7,13 @@
 import { withTimeout } from '@/utils.js';
 
 // Service UUID
-export const MANAGEMENT_SERVICE_UUID = 0x5750;
+export const MANAGEMENT_SERVICE_UUID = '27241b3e-63c9-49a2-b746-04192544ddec';
 
 // Characteristic UUIDs
-const SETTINGS_CHAR_UUID = 0x5751;
-const COMMANDS_CHAR_UUID = 0x5752;
-const FIRMWARE_DATA_CHAR_UUID = 0x5753;
-const VERSION_UUID = 0x5754;
+const SETTINGS_CHAR_UUID = 'be73241d-b1f6-46bd-b74a-14d9fe618f8d';
+const COMMANDS_CHAR_UUID = '0e024297-febb-431e-8bdb-15df070c15b2';
+const FIRMWARE_DATA_CHAR_UUID = '3feef119-04cd-4a07-96cd-56dc0d89871b';
+const VERSION_UUID = '6188ec31-6ad4-458e-bfed-beb8e31cb650';
 
 // Commands
 const COMMANDS = {

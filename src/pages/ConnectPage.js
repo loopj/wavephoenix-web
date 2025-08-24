@@ -1,5 +1,4 @@
-import { connectToDevice } from '@/DeviceManager.js';
-
+import { connect } from '@/connection.js';
 import { Page } from '@/Page.js';
 
 export class ConnectPage extends Page {
@@ -20,24 +19,18 @@ export class ConnectPage extends Page {
     this.#connectBtn.disabled = true;
 
     try {
-      // Connect to the device
-      const { client, mode } = await connectToDevice();
-
-      // Save the client and device mode
-      this.client = client;
-      this.mode = mode;
-
-      // Change to the appropriate page
-      if (mode === 'management') {
+      // Connect to the device and change to the appropriate page
+      const connection = await connect();
+      if (connection.mode === 'management') {
         Page.show('menu');
-      } else if (mode === 'migration') {
+      } else if (connection.mode === 'migration') {
         Page.show('migration');
-      } else if (mode === 'legacy') {
+      } else if (connection.mode === 'legacy') {
         Page.show('menu');
       }
     } catch (e) {
-      if (e.name === 'NotFoundError') {
-        console.debug('User cancelled Bluetooth device selection');
+      if (e.code === 'ECANCELED') {
+        // Ignore user cancellation
       } else if (e.code === 'ETIMEDOUT') {
         this.#connectInfo.textContent = 'Connection timed out. Please try again.';
       } else {

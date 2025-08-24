@@ -1,3 +1,4 @@
+import { connection } from '@/connection.js';
 import { Page } from '@/Page.js';
 
 export class MigrationPage extends Page {
@@ -12,7 +13,7 @@ export class MigrationPage extends Page {
   }
 
   backButtonClicked = () => {
-    this.client.disconnect();
+    connection.client.disconnect();
   };
 
   clientDisconnected() {
@@ -21,7 +22,7 @@ export class MigrationPage extends Page {
 
   onShow() {
     // Register disconnect handler
-    this.client.addDisconnectHandler(this.clientDisconnected);
+    connection.client.addDisconnectHandler(this.clientDisconnected);
 
     // Reset button states
     this.#backBtn.classList.remove('hidden');
@@ -29,6 +30,6 @@ export class MigrationPage extends Page {
 
   onHide() {
     // Remove disconnect handler
-    this.client?.removeDisconnectHandler(this.clientDisconnected);
+    connection.client?.removeDisconnectHandler(this.clientDisconnected);
   }
 }

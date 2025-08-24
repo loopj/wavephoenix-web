@@ -1,4 +1,5 @@
 import { GeckoBootloaderImage } from 'https://esm.sh/gbl-tools';
+import { connection } from '@/connection.js';
 import { MCUbootImage } from '@/MCUbootImage.js';
 import { Page } from '@/Page.js';
 import { bytesToHex, semverToString, uint32ToSemver } from '@/utils.js';
@@ -11,7 +12,6 @@ export class FirmwarePage extends Page {
   #controller;
   #rebooting = false;
   #flashing = false;
-  #page = document.getElementById('firmware-page');
   #fileInput = document.getElementById('firmware-file');
 
   // Button bar
@@ -21,14 +21,12 @@ export class FirmwarePage extends Page {
   #rebootBtn = document.getElementById('firmware-reboot-btn');
 
   // File selection area
-  #fileSelectionArea = document.getElementById('firmware-file-selection-area');
-  #fileSelectionInfo = document.getElementById('firmware-file-selection-info');
-  #chooseBtn = document.getElementById('firmware-choose-btn');
-
-  // File selected area
-  #fileSelectedArea = document.getElementById('firmware-file-selected-area');
-  #fileSelectedInfo = document.getElementById('firmware-file-selected-info');
-  #changeBtn = document.getElementById('firmware-change-btn');
+  #fileArea = document.getElementById('firmware-file-area');
+  #fileTarget = document.getElementById('firmware-file-target');
+  #filePrompt = document.getElementById('firmware-file-prompt');
+  #fileSelected = document.getElementById('firmware-file-selected');
+  #fileInfo = document.getElementById('firmware-file-info');
+  #fileName = document.getElementById('firmware-file-name');
 
   // Upload progress area
   #progressArea = document.getElementById('firmware-progress-area');
@@ -46,24 +44,17 @@ export class FirmwarePage extends Page {
     this.#cancelBtn.addEventListener('click', this.cancelButtonClicked);
     this.#rebootBtn.addEventListener('click', this.rebootButtonClicked);
     this.#fileInput.addEventListener('change', this.fileInputChanged);
-    this.#chooseBtn.addEventListener('click', this.chooseButtonClicked);
-    this.#changeBtn.addEventListener('click', this.changeButtonClicked);
-    this.#page.addEventListener('dragenter', this.pageDragEnter);
-    this.#page.addEventListener('dragover', (e) => e.preventDefault());
-    this.#page.addEventListener('dragleave', this.pageDragLeave);
-    this.#page.addEventListener('drop', this.pageDropped);
+    this.#fileTarget.addEventListener('click', this.fileTargetClicked);
+    this.#fileTarget.addEventListener('mouseover', this.fileTargetActive);
+    this.#fileTarget.addEventListener('mouseout', this.fileTargetInactive);
+    this.#fileTarget.addEventListener('dragenter', this.fileTargetActive);
+    this.#fileTarget.addEventListener('dragleave', this.fileTargetInactive);
+    this.#fileTarget.addEventListener('dragover', (e) => e.preventDefault());
+    this.#fileTarget.addEventListener('drop', this.fileTargetDropped);
   }
 
-  chooseButtonClicked = () => {
-    this.#fileInput.click();
-  };
-
-  changeButtonClicked = () => {
-    this.#fileInput.click();
-  };
-
   backButtonClicked = () => {
-    if (this.client.connected) {
+    if (connection.client.connected) {
       Page.show('menu');
     } else {
       Page.show('connect');
@@ -75,21 +66,25 @@ export class FirmwarePage extends Page {
   };
 
   rebootButtonClicked = () => {
-    this.client.disconnect();
+    connection.client.disconnect();
   };
 
-  pageDragEnter = (event) => {
+  fileTargetActive = (event) => {
     event.preventDefault();
-    this.#page.classList.add('dragging');
+    this.#fileTarget.classList.add('active');
   };
 
-  pageDragLeave = () => {
-    this.#page.classList.remove('dragging');
+  fileTargetInactive = () => {
+    this.#fileTarget.classList.remove('active');
   };
 
-  pageDropped = (event) => {
+  fileTargetClicked = () => {
+    this.#fileInput.click();
+  };
+
+  fileTargetDropped = (event) => {
     event.preventDefault();
-    this.#page.classList.remove('dragging');
+    this.#fileTarget.classList.remove('active');
     const file = event.dataTransfer.files[0];
     if (file) {
       this.#fileInput.files = event.dataTransfer.files;
@@ -109,48 +104,56 @@ export class FirmwarePage extends Page {
       return;
     }
 
-    // Reset the file selection area
-    this.#fileSelectionArea.classList.remove('hidden');
-    this.#fileSelectedArea.classList.add('hidden');
+    // Reset the file area
+    this.#fileArea.classList.remove('hidden');
     this.#flashBtn.classList.add('hidden');
 
     // Parse the firmware image
     const file = this.#fileInput.files[0];
-    const buffer = await file.arrayBuffer();
+    const fileName = file.name;
+    const fileData = await file.arrayBuffer();
 
-    if (this.mode === 'legacy') {
-      const firmwareImage = new GeckoBootloaderImage(buffer);
-      if (!firmwareImage.isValid()) {
-        this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected`;
+    if (connection.mode === 'legacy') {
+      const firmwareImage = new GeckoBootloaderImage(fileData);
+      if (!firmwareImage.isValid() || !firmwareImage.application) {
+        this.#fileInfo.textContent = `Not a valid WavePhoenix firmware image`;
+        this.#fileName.textContent = fileName;
+        this.#fileSelected.classList.remove('hidden');
         return;
       }
 
       const productId = bytesToHex(firmwareImage.application.productId);
       if (productId === MIGRATION_APP_PRODUCT_ID) {
-        this.#fileSelectedInfo.textContent = `Selected WavePhoenix bootloader migration firmware.`;
+        this.#fileInfo.textContent = `Selected WavePhoenix bootloader migration firmware`;
+        this.#fileName.textContent = fileName;
+        this.#fileSelected.classList.remove('hidden');
       } else if (productId === RECEIVER_APP_PRODUCT_ID) {
         const version = uint32ToSemver(firmwareImage.application.version);
-        this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${semverToString(version)}.`;
+        this.#fileInfo.textContent = `Selected WavePhoenix firmware version ${semverToString(version)}`;
+        this.#fileName.textContent = fileName;
+        this.#fileSelected.classList.remove('hidden');
       } else {
-        this.#fileSelectedInfo.textContent = `Invalid WavePhoenix firmware selected`;
+        this.#fileInfo.textContent = `Not a valid WavePhoenix firmware image`;
+        this.#fileName.textContent = fileName;
+        this.#fileSelected.classList.remove('hidden');
         return;
       }
     } else {
       // Check if the firmware image is valid
-      const firmwareImage = new MCUbootImage(buffer);
+      const firmwareImage = new MCUbootImage(fileData);
       if (!firmwareImage.isValid()) {
-        this.#fileSelectionInfo.textContent = `Invalid WavePhoenix firmware selected.`;
+        this.#fileInfo.textContent = `Not a valid WavePhoenix firmware image`;
+        this.#fileName.textContent = fileName;
+        this.#fileSelected.classList.remove('hidden');
         return;
       }
 
       // Show the selected firmware information
       const version = firmwareImage.getVersion();
-      this.#fileSelectedInfo.textContent = `Selected WavePhoenix firmware version ${semverToString(version)}.`;
+      this.#fileInfo.textContent = `Selected WavePhoenix firmware version ${semverToString(version)}`;
+      this.#fileName.textContent = fileName;
+      this.#fileSelected.classList.remove('hidden');
     }
-
-    // Toggle the "firmware selected" area
-    this.#fileSelectionArea.classList.add('hidden');
-    this.#fileSelectedArea.classList.remove('hidden');
 
     // Show the flash button
     this.#flashBtn.classList.remove('hidden');
@@ -165,7 +168,7 @@ export class FirmwarePage extends Page {
 
     // Show progress area
     this.#progressArea.classList.remove('hidden');
-    this.#fileSelectedArea.classList.add('hidden');
+    this.#fileArea.classList.add('hidden');
 
     // Hide flash and back buttons
     this.#flashBtn.classList.add('hidden');
@@ -176,11 +179,11 @@ export class FirmwarePage extends Page {
 
     // Start the DFU process
     const file = this.#fileInput.files[0];
-    const buffer = await file.arrayBuffer();
+    const fileData = await file.arrayBuffer();
 
     try {
       this.#flashing = true;
-      await this.client.flashFirmware(buffer, {
+      await connection.client.flashFirmware(fileData, {
         progress: this.setProgress,
         signal: this.#controller.signal,
       });
@@ -197,17 +200,17 @@ export class FirmwarePage extends Page {
       this.#flashing = false;
     }
 
-    if (this.mode === 'legacy') {
+    if (connection.mode === 'legacy') {
       // Legacy mode will reboot the device when the bluetooth client disconnects
       this.updateComplete();
     } else {
       // Request a device reboot
       this.#rebooting = true;
-      await this.client.reboot();
+      await connection.client.reboot();
     }
   };
 
-  async updateComplete() {
+  updateComplete() {
     this.setProgress(100);
 
     this.#cancelBtn.classList.add('hidden');
@@ -215,7 +218,7 @@ export class FirmwarePage extends Page {
 
     // In legacy mode we need to prompt to reboot
     // In management mode, we have already rebooted into the new version by this point
-    if (this.mode === 'legacy') {
+    if (connection.mode === 'legacy') {
       this.#rebootBtn.classList.remove('hidden');
     } else {
       this.#backBtn.classList.remove('hidden');
@@ -223,7 +226,7 @@ export class FirmwarePage extends Page {
     }
   }
 
-  async updateFailed(e) {
+  updateFailed(e) {
     if (e) {
       console.error('Error flashing firmware:', e);
     }
@@ -246,11 +249,11 @@ export class FirmwarePage extends Page {
 
       // Attempt to reconnect
       try {
-        await this.client.connect();
-        await this.updateComplete();
+        await connection.client.connect();
+        this.updateComplete();
       } catch (e) {
-        await this.client.disconnect();
-        await this.updateFailed();
+        connection.client.disconnect();
+        this.updateFailed();
         console.error('Failed to reconnect after firmware update', e);
       }
       return;
@@ -261,22 +264,23 @@ export class FirmwarePage extends Page {
 
   onShow() {
     // Register disconnect handler
-    this.client.addDisconnectHandler(this.clientDisconnected);
+    connection.client.addDisconnectHandler(this.clientDisconnected);
 
     // Reset the file input
+    const fileExtension = connection.mode === 'legacy' ? '.gbl' : '.bin';
     this.#fileInput.value = '';
-    this.#fileInput.accept = this.mode === 'legacy' ? '.gbl' : '.bin';
+    this.#fileInput.accept = fileExtension;
 
     // Reset the abort controller
     this.#controller = new AbortController();
 
     // Show only the file selection area
-    this.#fileSelectionArea.classList.remove('hidden');
-    this.#fileSelectedArea.classList.add('hidden');
+    this.#fileArea.classList.remove('hidden');
     this.#progressArea.classList.add('hidden');
+    this.#fileSelected.classList.add('hidden');
 
     // Reset text content
-    this.#fileSelectionInfo.textContent = 'Select or drag a firmware file to update your device.';
+    this.#filePrompt.textContent = `Drag a ${fileExtension} firmware file here, or click to pick one.`;
     this.#progressInfo.textContent =
       'Firmware update in progress. Do not disconnect or power off your device until the update is complete.';
 
@@ -292,6 +296,6 @@ export class FirmwarePage extends Page {
 
   onHide() {
     // Remove disconnect handler
-    this.client?.removeDisconnectHandler(this.clientDisconnected);
+    connection.client.removeDisconnectHandler(this.clientDisconnected);
   }
 }

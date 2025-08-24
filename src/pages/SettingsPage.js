@@ -1,3 +1,4 @@
+import { connection } from '@/connection.js';
 import { Page } from '@/Page.js';
 
 export class SettingsPage extends Page {
@@ -22,17 +23,17 @@ export class SettingsPage extends Page {
 
   wirelessChannelChanged = async () => {
     const channel = parseInt(this.#wirelessChannel.value, 10);
-    await this.client.setWirelessChannel(channel);
+    await connection.client.setWirelessChannel(channel);
   };
 
   controllerTypeChanged = async () => {
     const type = parseInt(this.#controllerType.value, 10);
-    await this.client.setControllerType(type);
+    await connection.client.setControllerType(type);
   };
 
   wirelessIdChanged = async () => {
     const isEnabled = this.#pinWirelessId.checked;
-    await this.client.setPinWirelessId(isEnabled);
+    await connection.client.setPinWirelessId(isEnabled);
   };
 
   pairingButtonsChanged = async () => {
@@ -40,7 +41,7 @@ export class SettingsPage extends Page {
       .map((option) => parseInt(option.value, 10))
       .reduce((acc, value) => acc | (1 << value), 0);
 
-    await this.client.setPairingButtons(bitfield);
+    await connection.client.setPairingButtons(bitfield);
   };
 
   backButtonClicked = () => {
@@ -52,11 +53,11 @@ export class SettingsPage extends Page {
   }
 
   async fetchSettings() {
-    this.#wirelessChannel.value = await this.client.getWirelessChannel();
-    this.#controllerType.value = await this.client.getControllerType();
-    this.#pinWirelessId.checked = await this.client.getPinWirelessId();
+    this.#wirelessChannel.value = await connection.client.getWirelessChannel();
+    this.#controllerType.value = await connection.client.getControllerType();
+    this.#pinWirelessId.checked = await connection.client.getPinWirelessId();
 
-    const pairingButtons = await this.client.getPairingButtons();
+    const pairingButtons = await connection.client.getPairingButtons();
     for (let i = 0; i < this.#pairingButtons.options.length; i++) {
       const option = this.#pairingButtons.options[i];
       option.selected = (pairingButtons & (1 << i)) !== 0;
@@ -65,7 +66,7 @@ export class SettingsPage extends Page {
 
   onShow() {
     // Register disconnect handler
-    this.client.addDisconnectHandler(this.clientDisconnected);
+    connection.client.addDisconnectHandler(this.clientDisconnected);
 
     // Fetch settings in the background
     this.fetchSettings();
@@ -73,6 +74,6 @@ export class SettingsPage extends Page {
 
   onHide() {
     // Remove disconnect handler
-    this.client?.removeDisconnectHandler(this.clientDisconnected);
+    connection.client?.removeDisconnectHandler(this.clientDisconnected);
   }
 }
