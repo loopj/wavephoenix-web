@@ -2,11 +2,11 @@ import { GeckoBootloaderImage } from 'https://esm.sh/gbl-tools';
 import { connection } from '@/connection.js';
 import { MCUbootImage } from '@/MCUbootImage.js';
 import { Page } from '@/Page.js';
-import { bytesToHex, semverToString, uint32ToSemver } from '@/utils.js';
+import { bytesToUUIDString, semverToString, uint32ToSemver } from '@/utils.js';
 
 // GBL product IDs
-const RECEIVER_APP_PRODUCT_ID = 'cb39eacc719044358f77fced4d0b96eb';
-const MIGRATION_APP_PRODUCT_ID = 'd94787830b316b07c387878eb96c77a0';
+const RECEIVER_APP_UUID = 'cb39eacc-7190-4435-8f77-fced4d0b96eb';
+const MIGRATION_APP_UUID = 'd9478783-0b31-6b07-c387-878eb96c77a0';
 
 export class FirmwarePage extends Page {
   #controller;
@@ -122,12 +122,12 @@ export class FirmwarePage extends Page {
         return;
       }
 
-      const productId = bytesToHex(firmwareImage.application.productId);
-      if (productId === MIGRATION_APP_PRODUCT_ID) {
+      const productId = bytesToUUIDString(firmwareImage.application.productId);
+      if (productId === MIGRATION_APP_UUID) {
         this.#fileInfo.textContent = `Selected WavePhoenix bootloader migration firmware`;
         this.#fileName.textContent = fileName;
         this.#fileSelected.classList.remove('hidden');
-      } else if (productId === RECEIVER_APP_PRODUCT_ID) {
+      } else if (productId === RECEIVER_APP_UUID) {
         const version = uint32ToSemver(firmwareImage.application.version);
         this.#fileInfo.textContent = `Selected WavePhoenix firmware version ${semverToString(version)}`;
         this.#fileName.textContent = fileName;

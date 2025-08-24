@@ -45,10 +45,16 @@ export function semverToString(version) {
 }
 
 /**
- * Convert a byte array to a hex string.
- * @param {Uint8Array} bytes
- * @returns {string}
+ * Convert a 16-byte array to a UUID string.
+ * @param {Uint8Array} bytes - 16-byte array
+ * @returns {string} - UUID string, in 8-4-4-4-12 format
  */
-export function bytesToHex(bytes) {
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+export function bytesToUUIDString(bytes) {
+  if (bytes.length !== 16) throw new Error('Invalid byte length');
+
+  // Convert to hex string
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+
+  // Insert UUID dashes (8-4-4-4-12)
+  return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
 }
