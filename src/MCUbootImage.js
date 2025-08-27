@@ -66,14 +66,20 @@ export class MCUbootImage {
     offset = this.#parseTLVs(offset, this.TLVs, IMAGE_TLV_INFO_MAGIC);
   }
 
-  isValid() {
-    // 32-bit magic number must be correct (IMAGE_MAGIC).
-    // Image must contain an image_tlv_info struct, identified by its magic (IMAGE_TLV_PROT_INFO_MAGIC or IMAGE_TLV_INFO_MAGIC) exactly following the firmware (hdr_size + img_size). If IMAGE_TLV_PROT_INFO_MAGIC is found then after ih_protect_tlv_size bytes, another image_tlv_info with magic equal to IMAGE_TLV_INFO_MAGIC must be present.
-    // Image must contain a SHA256 TLV.
-    // Calculated SHA256 must match SHA256 TLV contents.
-    // Image may contain a signature TLV. If it does, it must also have a KEYHASH TLV with the hash of the key that was used to sign. The list of keys will then be iterated over looking for the matching key, which then will then be used to verify the image contents.
+  async isValid() {
+    // 32-bit magic number must be correct
+    if (this.header.magic !== MCUBOOT_IMAGE_MAGIC) return false;
 
-    return this.header.magic === MCUBOOT_IMAGE_MAGIC;
+    // Calculated SHA256 must match SHA256 TLV contents.
+    if ((await this.#validateSHA256()) === false) return false;
+
+    // Image may contain a signature TLV. If it does, it must also have a
+    // KEYHASH TLV with the hash of the key that was used to sign. The list of
+    // keys will then be iterated over looking for the matching key, which then
+    // will then be used to verify the image contents.
+    // TODO
+
+    return true;
   }
 
   getVersion() {
@@ -109,6 +115,7 @@ export class MCUbootImage {
     // Grab the TLV area header
     const magic = this.#dataView.getUint16(offset, true);
     const tlvTot = this.#dataView.getUint16(offset + 2, true);
+    const tlvEnd = offset + tlvTot;
     offset += 4;
 
     // Check magic is as expected
@@ -116,7 +123,7 @@ export class MCUbootImage {
       throw new Error(`Error parsing TLV area, got magic ${magic}, expected ${expectedMagic}`);
     }
 
-    while (offset < offset + tlvTot) {
+    while (offset < tlvEnd) {
       // Grab the TLV header
       const tlvType = this.#dataView.getUint16(offset, true);
       const tlvLen = this.#dataView.getUint16(offset + 2, true);
@@ -128,5 +135,18 @@ export class MCUbootImage {
     }
 
     return offset;
+  }
+
+  async #validateSHA256() {
+    // Calculate SHA256 of header + payload + protected TLVs
+    const length = this.header.hdr_size + this.header.img_size + this.header.protect_tlv_size;
+    const data = new Uint8Array(this.#buffer.buffer, 0, length);
+    const actual = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
+
+    // Get expected SHA256 from TLV
+    const expected = this.getTLV(TLV_TYPE.SHA256);
+
+    // Check they match
+    return expected.every((v, i) => v === actual[i]);
   }
 }

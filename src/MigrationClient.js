@@ -79,7 +79,7 @@ export class MigrationClient {
     }
   }
 
-  async flashApp(data, { reliable = false, wait = 10, chunkSize = 64, progress, signal } = {}) {
+  async flashApp(data, { reliable, wait, chunkSize, progress, signal } = {}) {
     // Start the OTA process
     signal?.throwIfAborted();
     await this.#writeCommand(COMMAND.BEGIN_APP_UPLOAD);
@@ -92,7 +92,7 @@ export class MigrationClient {
     await this.#writeCommand(COMMAND.APPLY_APP_UPLOAD);
   }
 
-  async flashBootloader(data, { reliable = false, wait = 10, chunkSize = 64, progress, signal } = {}) {
+  async flashBootloader(data, { reliable, wait, chunkSize, progress, signal } = {}) {
     // Start the OTA process
     signal?.throwIfAborted();
     await this.#writeCommand(COMMAND.BEGIN_BOOTLOADER_UPLOAD);
@@ -107,7 +107,7 @@ export class MigrationClient {
 
   async getDigest() {
     const value = await this.#digestChar.readValue();
-    return value.buffer;
+    return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
   }
 
   async reboot() {

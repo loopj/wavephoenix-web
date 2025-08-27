@@ -2,11 +2,15 @@ import { GeckoBootloaderImage } from 'https://esm.sh/gbl-tools';
 import { connection } from '@/connection.js';
 import { MCUbootImage } from '@/MCUbootImage.js';
 import { Page } from '@/Page.js';
-import { bytesToUUIDString, semverToString, uint32ToSemver } from '@/utils.js';
+import { bytesToUUIDString, semverToString, typedArraysEqual, uint32ToSemver } from '@/utils.js';
 
 // GBL product IDs
 const RECEIVER_APP_UUID = 'cb39eacc-7190-4435-8f77-fced4d0b96eb';
 const MIGRATION_APP_UUID = 'd9478783-0b31-6b07-c387-878eb96c77a0';
+
+// WavePhoenix app firmware id
+const APP_ID_TLV = 0xc001;
+const WAVEPHOENIX_APP_MAGIC = new Uint8Array([0x57, 0x50]);
 
 export class FirmwarePage extends Page {
   #controller;
@@ -139,9 +143,17 @@ export class FirmwarePage extends Page {
         return;
       }
     } else {
-      // Check if the firmware image is valid
+      // Check if the file is a valid MCUboot image
       const firmwareImage = new MCUbootImage(fileData);
-      if (!firmwareImage.isValid()) {
+      if (!(await firmwareImage.isValid())) {
+        this.#fileInfo.textContent = `Not a valid WavePhoenix firmware image`;
+        this.#fileName.textContent = fileName;
+        this.#fileSelected.classList.remove('hidden');
+        return;
+      }
+
+      // Check if the image is a WavePhoenix app firmware
+      if (!typedArraysEqual(firmwareImage.getTLV(APP_ID_TLV), WAVEPHOENIX_APP_MAGIC)) {
         this.#fileInfo.textContent = `Not a valid WavePhoenix firmware image`;
         this.#fileName.textContent = fileName;
         this.#fileSelected.classList.remove('hidden');

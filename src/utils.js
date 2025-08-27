@@ -58,3 +58,13 @@ export function bytesToUUIDString(bytes) {
   // Insert UUID dashes (8-4-4-4-12)
   return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
 }
+
+/**
+ * Check if two typed arrays are equal.
+ * @param {TypedArray} a
+ * @param {TypedArray} b
+ * @return {boolean}
+ */
+export function typedArraysEqual(a, b) {
+  return a?.byteLength === b?.byteLength && a?.every((v, i) => v === b[i]);
+}
