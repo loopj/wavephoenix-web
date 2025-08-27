@@ -53,7 +53,7 @@ export class MenuPage extends Page {
       if (connection.mode === 'legacy') {
         const version = await connection.client.getApplicationVersion();
         if (!version) {
-          this.#firmwareVersion.textContent = 'No application firmware currently installed.';
+          this.#firmwareVersion.textContent = 'No application firmware currently installed';
         } else {
           const semver = uint32ToSemver(version);
           this.#firmwareVersion.textContent = `Current firmware version: ${semverToString(semver)}`;

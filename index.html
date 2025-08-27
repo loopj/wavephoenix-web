@@ -454,10 +454,19 @@
       <p>Bootloader migration firmware detected.</p>
       <p>To abandon migration, hold the pair button on your WavePhoenix when you plug it in to re-enter bootloader mode
         and re-flash the old firmware.</p>
+      <div>
+        <label for="migration-app-file">App firmware:</label>
+        <input type="file" id="migration-app-file" accept=".bin">
+      </div>
+      <div>
+        <label for="migration-btl-file">Bootloader firmware:</label>
+        <input type="file" id="migration-btl-file" accept=".bin">
+      </div>
     </div>
 
     <div class="card-actions">
       <button id="migration-back-btn" class="secondary">Back</button>
+      <button id="migration-flash-btn" class="primary">Upload Firmware</button>
     </div>
   </div>
 
