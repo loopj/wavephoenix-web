@@ -1,15 +1,30 @@
-import { GBL_OTA_SERVICE_UUID, GeckoBootloaderClient } from 'https://esm.sh/gbl-tools';
+import { signal } from '@preact/signals';
+import { useEffect } from 'preact/hooks';
+
+import { GBL_OTA_SERVICE_UUID, GeckoBootloaderClient } from 'gbl-tools';
 import { MANAGEMENT_SERVICE_UUID, ManagementClient } from './ManagementClient.js';
 import { MIGRATION_SERVICE_UUID, MigrationClient } from './MigrationClient.js';
-import { withTimeout } from './utils.js';
+import { uint32ToSemver, withTimeout } from './utils.js';
 
 export let connection = null;
+export const version = signal(null);
 
 const UUID_TO_DEVICE_MODE = {
   [MANAGEMENT_SERVICE_UUID]: 'management',
   [MIGRATION_SERVICE_UUID]: 'migration',
   [GBL_OTA_SERVICE_UUID]: 'legacy',
 };
+
+/**
+ * Hook to add a disconnect handler for the current connection.
+ * @param {Function} handler - The disconnect handler function.
+ */
+export function useDisconnectHandler(handler) {
+  useEffect(() => {
+    connection.client.addDisconnectHandler(handler);
+    return () => connection.client.removeDisconnectHandler(handler);
+  }, []);
+}
 
 export async function connect() {
   // Prompt the user to select a Bluetooth device
@@ -39,22 +54,41 @@ export async function connect() {
   let client = null;
   const mode = UUID_TO_DEVICE_MODE[serviceUUID];
   switch (mode) {
-    case 'management':
+    case 'management': {
+      // Create and connect the management client
       client = new ManagementClient(device);
       await client.connect();
+
+      // Grab the firmware version
+      version.value = await client.getVersion();
       break;
-    case 'migration':
+    }
+
+    case 'migration': {
+      // Create and connect the migration client
       client = new MigrationClient(device);
       await client.connect();
+
       break;
-    case 'legacy':
+    }
+
+    case 'legacy': {
+      // Create and connect the Gecko bootloader client
       client = new GeckoBootloaderClient(device);
       await client.connect();
+
+      // Grab the application version
+      const versionNum = await client.getApplicationVersion();
+      version.value = versionNum ? uint32ToSemver(versionNum) : null;
+
       break;
-    default:
+    }
+
+    default: {
       device.gatt.disconnect();
       connection = null;
       throw new Error(`Unknown service UUID: ${serviceUUID}`);
+    }
   }
 
   // Save the connection details

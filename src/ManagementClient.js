@@ -200,6 +200,9 @@ export class ManagementClient {
 
     // Finish the OTA process
     await this.applyDFU();
+
+    // Always report 100% progress at the end
+    progress?.(100);
   }
 
   //

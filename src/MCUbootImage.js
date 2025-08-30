@@ -52,12 +52,18 @@ export class MCUbootImage {
   }
 
   parse() {
+    // Bail if magic number is incorrect
+    const magic = this.#dataView.getUint32(0, true);
+    if (magic !== MCUBOOT_IMAGE_MAGIC) return;
+
+    // Parse header
     this.header = this.#parseHeader();
+
+    // Parse payload
     this.payload = this.#parsePayload();
 
-    let offset = this.header.hdr_size + this.header.img_size;
-
     // Parse protected TLVs (if any)
+    let offset = this.header.hdr_size + this.header.img_size;
     if (this.header.protect_tlv_size !== 0) {
       offset = this.#parseTLVs(offset, this.protectedTLVs, IMAGE_TLV_PROT_INFO_MAGIC);
     }
@@ -68,7 +74,7 @@ export class MCUbootImage {
 
   async isValid() {
     // 32-bit magic number must be correct
-    if (this.header.magic !== MCUBOOT_IMAGE_MAGIC) return false;
+    if (this.header?.magic !== MCUBOOT_IMAGE_MAGIC) return false;
 
     // Calculated SHA256 must match SHA256 TLV contents.
     if ((await this.#validateSHA256()) === false) return false;

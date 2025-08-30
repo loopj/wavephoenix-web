@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "baseUrl": ".", 
-    "paths": {
-      "@/*": ["src/*"],
-      "gbl-tools": ["https://esm.sh/gbl-tools"]
-    }
-  }
-}
