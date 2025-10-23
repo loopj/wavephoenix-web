@@ -1,6 +1,6 @@
 import { useComputed, useSignal } from '@preact/signals';
 import { html } from 'htm/preact';
-import { useRef } from 'preact/hooks';
+import { useEffect } from 'preact/hooks';
 
 import { MCUbootImage } from '@/MCUbootImage.js';
 
@@ -24,12 +24,34 @@ export function MigrationPage() {
     return !!selectedAppFile.value?.type && !!selectedBtlFile.value?.type;
   });
 
+  // Prevent accidental tab close/reload during critical sections
+  useEffect(() => {
+    if (!['uploading', 'failed-btl'].includes(step.value)) return;
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [step.value]);
+
   useDisconnectHandler(() => {
     showPage('connect');
   });
 
   function backButtonClick() {
     connection.client.disconnect();
+  }
+
+  async function rebootButtonClick() {
+    await connection.client.reboot();
+  }
+
+  function retryButtonClick() {
+    step.value = 'selecting';
   }
 
   function appFileStatus() {
@@ -96,24 +118,28 @@ export function MigrationPage() {
     const appExpectedSHA = new Uint8Array(await crypto.subtle.digest('SHA-256', appData));
 
     // Flash the app
-    await connection.client.flashApp(appData, {
-      progress: (value) => {
-        uploadProgress.value = value / 2;
-      },
-    });
+    try {
+      await connection.client.flashApp(appData, {
+        progress: (value) => {
+          uploadProgress.value = value / 2;
+        },
+      });
+    } catch (error) {
+      console.error('App upload failed:', error);
+      step.value = 'failed-app';
+      return;
+    }
 
     // Validate the app's SHA-256
     const appActualSHA = await connection.client.getDigest();
     if (!typedArraysEqual(appExpectedSHA, appActualSHA)) {
       console.error('App upload failed: SHA-256 mismatch');
-      // TODO: Just fail and have user initiate upload again
+      step.value = 'failed-app';
       return;
     }
 
     // Step 2: Upload the new MCUboot bootloader firmware, and validate
-    // ENTER CRITICAL SECTION - DO NOT DISCONNECT UNTIL REBOOTED
-    // TODO: Add a beforeunload handler to prevent tab close / reload
-    // TODO: Disable cancel/back buttons
+    // ENTER CRITICAL SECTION - DO NOT DISCONNECT UNTIL BOOTLOADER IS UPLOADED AND VALIDATED
     const btlData = await selectedBtlFile.value.file.arrayBuffer();
     const btlExpectedSHA = new Uint8Array(await crypto.subtle.digest('SHA-256', btlData));
 
@@ -148,16 +174,16 @@ export function MigrationPage() {
 
     // LEAVE CRITICAL SECTION
 
-    // This is a bricked device if we reach here
+    // If we reach here it means the bootloader upload failed after multiple retries
+    // If the user disconnects now, they may brick their device
     if (!success) {
       console.error('Bootloader upload failed after 3 attempts, aborting.');
+      step.value = 'failed-btl';
       return;
     }
 
-    // Step 5: Reboot to have the new firmware moved to the primary slot
-    await connection.client.reboot();
-
-    // Step 6: Prompt the user to reconnect after the disconnect
+    // Step 5: Prompt the user to reboot to have the new firmware moved to the primary slot
+    step.value = 'completed';
   }
 
   function UploadProgress() {
@@ -182,8 +208,10 @@ export function MigrationPage() {
         ${step.value === 'selecting' &&
         html`
           <p>
-            Select both an app firmware and bootloader to proceed with bootloader
-            migration.
+            Make sure your WavePhoenix is very close to your computer and do not disconnect your device until the update is complete.
+          </p>
+          <p>
+            Select both an app firmware and bootloader to continue.
           </p>
 
           <${FileSelector}
@@ -221,14 +249,29 @@ export function MigrationPage() {
           </${FileSelector}>
         `}
         ${step.value === 'uploading' && html`<${UploadProgress} />`}
+        ${step.value === 'failed-app' && html`<p>Bootloader migration failed.</p>`}
+        ${step.value === 'failed-btl' &&
+        html`<p>Bootloader migration failed.</p>
+          <p>The bootloader failed to upload after multiple retries.</p>
+          <p class="warning">
+            If you unplug your WavePhoenix at this point, you may no longer be able to flash
+            firmware using Bluetooth. It is strongly recommended that you keep your device connected
+            and try again.
+          </p>`}
+        ${step.value === 'completed' &&
+        html`<p>Upload complete, reboot your device to complete the migration.</p>`}
       </div>
 
       <div class="card-actions">
-        ${(step.value === 'selecting' || step.value === 'failed') &&
+        ${step.value === 'selecting' &&
         html` <button onClick=${backButtonClick} class="secondary">Back</button> `}
         ${step.value === 'selecting' &&
         selectedFilesValid.value &&
         html` <button class="primary" onClick=${uploadFirmwareClick}>Begin Migration</button> `}
+        ${step.value === 'completed' &&
+        html` <button onClick=${rebootButtonClick} class="primary">Reboot Device</button> `}
+        ${(step.value === 'failed-app' || step.value === 'failed-btl') &&
+        html` <button onClick=${retryButtonClick} class="primary">Retry</button> `}
       </div>
     </div>
   `;

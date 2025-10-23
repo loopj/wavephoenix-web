@@ -297,3 +297,7 @@ button.menu-item {
 .settings-row:last-child {
   border-bottom: none;
 }
+
+.warning {
+  color: #f44336;
+}

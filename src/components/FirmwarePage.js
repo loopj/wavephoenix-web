@@ -1,6 +1,6 @@
 import { useSignal } from '@preact/signals';
 import { html } from 'htm/preact';
-import { useRef } from 'preact/hooks';
+import { useRef, useEffect } from 'preact/hooks';
 
 import { GeckoBootloaderImage } from 'gbl-tools';
 
@@ -27,6 +27,20 @@ export function FirmwarePage() {
 
   // Refs
   const abortController = useRef(null);
+
+  // Prevent accidental tab close/reload during critical sections
+  useEffect(() => {
+    if (step.value !== 'uploading') return;
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [step.value]);
 
   useDisconnectHandler(() => {
     // Client disconnected during flashing firmware, let GATT failure handle state
