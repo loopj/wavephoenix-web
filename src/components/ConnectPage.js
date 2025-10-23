@@ -62,7 +62,7 @@ export function ConnectPage() {
         <p>Hold the pair button on your WavePhoenix for 3 seconds to enter management mode.</p>
         <p>
           The LED will begin fading on and off to indicate management mode is active. Then click
-          <em>Connect to Device</em> below.
+          <em> Connect to Device</em> below.
         </p>
       </div>
 
