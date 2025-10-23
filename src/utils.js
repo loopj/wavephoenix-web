@@ -10,7 +10,7 @@ export function withTimeout(promise, timeout) {
         error.name = 'TimeoutError';
         error.code = 'ETIMEDOUT';
         reject(error);
-      }, timeout),
+      }, timeout)
     ),
   ]);
 }
@@ -39,7 +39,7 @@ export function semverToString(version) {
   if (!version) return '(unknown)';
 
   let versionString = `${version.major}.${version.minor}.${version.patch}`;
-  if (version.build !== 0) versionString += `+${version.build}`;
+  if (version.build) versionString += `+${version.build}`;
 
   return versionString;
 }
@@ -56,7 +56,13 @@ export function bytesToUUIDString(bytes) {
   const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 
   // Insert UUID dashes (8-4-4-4-12)
-  return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20),
+  ].join('-');
 }
 
 /**
@@ -67,4 +73,30 @@ export function bytesToUUIDString(bytes) {
  */
 export function typedArraysEqual(a, b) {
   return a?.byteLength === b?.byteLength && a?.every((v, i) => v === b[i]);
+}
+
+/**
+ * Convert a 64 character SHA-256 hex string to a 32-byte Uint8Array.
+ * @param {string} hexString
+ * @returns {Uint8Array}
+ */
+export function sha256StringToBytes(hexString) {
+  if (hexString.length !== 64) return null;
+
+  const out = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    out[i] = parseInt(hexString.slice(i * 2, i * 2 + 2), 16);
+  }
+  return out;
+}
+
+/**
+ * Convert a 32-byte Uint8Array to a 64 character SHA-256 hex string.
+ * @param {Uint8Array} bytes
+ * @returns {string}
+ */
+export function sha256BytesToString(bytes) {
+  if (bytes.length !== 32) return null;
+
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }

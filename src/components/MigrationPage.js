@@ -6,9 +6,18 @@ import { MCUbootImage } from '@/MCUbootImage.js';
 
 import { connection, useDisconnectHandler } from '@/connection.js';
 import { showPage } from '@/nav.js';
-import { semverToString, typedArraysEqual } from '@/utils.js';
+import { semverToString, sha256BytesToString, typedArraysEqual } from '@/utils.js';
 
 import { FileSelector } from './FileSelector.js';
+
+// WavePhoenix bootloader versions by SHA-256
+const BOOTLOADER_VERSIONS = {
+  c437629cead63edd638937485fdc3770f5e888c0e366900da992f48902e1f466: {
+    major: 0,
+    minor: 10,
+    patch: 0,
+  },
+};
 
 // WavePhoenix app firmware id
 const APP_ID_TLV = 0xc001;
@@ -92,16 +101,26 @@ export function MigrationPage() {
     if (selectedBtlFile.value.error) {
       return 'Not a valid bootloader image';
     } else if (selectedBtlFile.value.type === 'bootloader') {
-      return 'WavePhoenix bootloader image';
+      return `WavePhoenix Bootloader, v${semverToString(selectedBtlFile.value.version)}`;
     }
   }
 
   async function validateBtlFile(file) {
-    // TODO: Validate the bootloader SHA256 vs a whitelist of known good bootloaders
+    const data = await file.arrayBuffer();
+    const btlSHABytes = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
+    const btlSHA = sha256BytesToString(btlSHABytes);
+
+    if (!BOOTLOADER_VERSIONS[btlSHA]) {
+      return { message: 'Unknown bootloader image' };
+    }
   }
 
   async function onBtlFileAccepted(file) {
-    selectedBtlFile.value = { file, type: 'bootloader' };
+    const data = await file.arrayBuffer();
+    const btlSHABytes = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
+    const btlSHA = sha256BytesToString(btlSHABytes);
+
+    selectedBtlFile.value = { file, type: 'bootloader', version: BOOTLOADER_VERSIONS[btlSHA] };
   }
 
   async function onBtlFileRejected(file, error) {
