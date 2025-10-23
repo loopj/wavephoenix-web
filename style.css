@@ -233,6 +233,13 @@ button.loading::before {
   opacity: 0.8;
 }
 
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
 /* Progress bars */
 .progress-bar {
   position: relative;

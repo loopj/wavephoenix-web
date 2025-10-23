@@ -23,6 +23,7 @@ export function FirmwarePage() {
   const step = useSignal('selecting');
   const selectedFile = useSignal(null);
   const uploadProgress = useSignal(0);
+  let reliableUpload = false;
 
   // Refs
   const abortController = useRef(null);
@@ -57,10 +58,9 @@ export function FirmwarePage() {
   }
 
   async function validateFirmwareFile(file) {
-    const data = await file.arrayBuffer();
-
     if (connection.mode === 'management') {
       // Validate MCUboot images
+      const data = await file.arrayBuffer();
       const image = new MCUbootImage(data);
 
       if (!image.isValid()) {
@@ -72,6 +72,7 @@ export function FirmwarePage() {
       }
     } else {
       // Validate GBL images
+      const data = await file.arrayBuffer();
       const image = new GeckoBootloaderImage(data, false);
 
       try {
@@ -130,6 +131,7 @@ export function FirmwarePage() {
 
       const data = await selectedFile.value.file.arrayBuffer();
       await connection.client.flashFirmware(data, {
+        reliable: reliableUpload,
         progress: (value) => {
           uploadProgress.value = value;
         },
@@ -160,6 +162,10 @@ export function FirmwarePage() {
     } else if (selectedFile.value.type === 'migration') {
       return `Bootloader Migration Firmware, v${semverToString(selectedFile.value.version)}`;
     }
+  }
+
+  function uploadModeChange(event) {
+    reliableUpload = event.target.checked;
   }
 
   function UploadProgress() {
@@ -204,6 +210,12 @@ export function FirmwarePage() {
               `
             }
           </${FileSelector}>
+
+          <p>
+            <label class="toggle-row">
+              <input type="checkbox" onChange=${uploadModeChange}/> Upload using a slower but more reliable method
+            </label>
+          </p>
         `}
         ${step.value === 'uploading' && html`<${UploadProgress} />`}
         ${step.value === 'completed' && html`<p>Firmware update successful!</p>`}
