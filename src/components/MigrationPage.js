@@ -55,21 +55,21 @@ export function MigrationPage() {
   }
 
   async function onAppFileAccepted(file) {
-    const name = file.name;
     const data = await file.arrayBuffer();
     const image = new MCUbootImage(data);
     const version = image.getVersion();
-    selectedAppFile.value = { name, data, version, type: 'zephyr' };
+
+    selectedAppFile.value = { file, version, type: 'zephyr' };
   }
 
   async function onAppFileRejected(file, error) {
-    selectedAppFile.value = { name: file.name, error: error };
+    selectedAppFile.value = { file, error };
   }
 
   function btlFileStatus() {
     if (selectedBtlFile.value.error) {
       return 'Not a valid bootloader image';
-    } else if (selectedBtlFile.value.type === 'zephyr') {
+    } else if (selectedBtlFile.value.type === 'bootloader') {
       return 'WavePhoenix bootloader image';
     }
   }
@@ -79,11 +79,11 @@ export function MigrationPage() {
   }
 
   async function onBtlFileAccepted(file) {
-    selectedBtlFile.value = { name: file.name, data: await file.arrayBuffer(), type: 'zephyr' };
+    selectedBtlFile.value = { file, type: 'bootloader' };
   }
 
   async function onBtlFileRejected(file, error) {
-    selectedBtlFile.value = { name: file.name, error: error };
+    selectedBtlFile.value = { file, error };
   }
 
   async function uploadFirmwareClick() {
@@ -92,12 +92,11 @@ export function MigrationPage() {
     uploadProgress.value = 0;
 
     // Step 1: Upload the new zephyr app firmware, and validate
-    const appExpectedSHA = new Uint8Array(
-      await crypto.subtle.digest('SHA-256', selectedAppFile.value.data)
-    );
+    const appData = await selectedAppFile.value.file.arrayBuffer();
+    const appExpectedSHA = new Uint8Array(await crypto.subtle.digest('SHA-256', appData));
 
     // Flash the app
-    await connection.client.flashApp(selectedAppFile.value.data, {
+    await connection.client.flashApp(appData, {
       progress: (value) => {
         uploadProgress.value = value / 2;
       },
@@ -115,16 +114,15 @@ export function MigrationPage() {
     // ENTER CRITICAL SECTION - DO NOT DISCONNECT UNTIL REBOOTED
     // TODO: Add a beforeunload handler to prevent tab close / reload
     // TODO: Disable cancel/back buttons
-    const btlExpectedSHA = new Uint8Array(
-      await crypto.subtle.digest('SHA-256', selectedBtlFile.value.data)
-    );
+    const btlData = await selectedBtlFile.value.file.arrayBuffer();
+    const btlExpectedSHA = new Uint8Array(await crypto.subtle.digest('SHA-256', btlData));
 
     // Try up to 3 times in case of failure
     let success = false;
     for (let i = 0; i < 3; i++) {
       try {
         // Flash the bootloader
-        await connection.client.flashBootloader(selectedBtlFile.value.data, {
+        await connection.client.flashBootloader(btlData, {
           progress: (value) => {
             uploadProgress.value = value / 2 + 50;
           },
@@ -184,7 +182,7 @@ export function MigrationPage() {
         ${step.value === 'selecting' &&
         html`
           <p>
-            Please select both an app firmware and a bootloader to proceed with bootloader
+            Select both an app firmware and bootloader to proceed with bootloader
             migration.
           </p>
 
@@ -198,7 +196,7 @@ export function MigrationPage() {
             ${
               selectedAppFile.value &&
               html`<div class="file-selected">
-                <div class="file-name">${selectedAppFile.value.name}</div>
+                <div class="file-name">${selectedAppFile.value.file.name}</div>
                 <div class="file-info">${appFileStatus()}</div>
               </div>`
             }
@@ -216,7 +214,7 @@ export function MigrationPage() {
             ${
               selectedBtlFile.value &&
               html`<div class="file-selected">
-                <div class="file-name">${selectedBtlFile.value.name}</div>
+                <div class="file-name">${selectedBtlFile.value.file.name}</div>
                 <div class="file-info">${btlFileStatus()}</div>
               </div>`
             }

@@ -96,31 +96,27 @@ export function FirmwarePage() {
   }
 
   async function onFileAccepted(file) {
-    // Process the validated file
-    const name = file.name;
-    const data = await file.arrayBuffer();
-
     if (connection.mode === 'management') {
       // MCUboot images
-      const image = new MCUbootImage(data);
+      const image = new MCUbootImage(await file.arrayBuffer());
       const version = image.getVersion();
-      selectedFile.value = { name, data, version, type: 'zephyr' };
+      selectedFile.value = { file, version, type: 'zephyr' };
     } else {
       // GBL images
-      const image = new GeckoBootloaderImage(data);
+      const image = new GeckoBootloaderImage(await file.arrayBuffer());
       const productId = bytesToUUIDString(image.application.productId);
       const version = uint32ToSemver(image.application.version);
       if (productId === MIGRATION_APP_UUID) {
-        selectedFile.value = { name, data, version, type: 'migration' };
+        selectedFile.value = { file, version, type: 'migration' };
       } else if (productId === RECEIVER_APP_UUID) {
-        selectedFile.value = { name, data, version, type: 'legacy' };
+        selectedFile.value = { file, version, type: 'legacy' };
       }
     }
   }
 
   function onFileRejected(file, error) {
-    // Reset previous state and set error info
-    selectedFile.value = { name: file.name, error: error };
+    // Mark file as rejected with error info
+    selectedFile.value = { file, error };
   }
 
   async function flashButtonClick() {
@@ -132,7 +128,8 @@ export function FirmwarePage() {
       step.value = 'uploading';
       uploadProgress.value = 0;
 
-      await connection.client.flashFirmware(selectedFile.value.data, {
+      const data = await selectedFile.value.file.arrayBuffer();
+      await connection.client.flashFirmware(data, {
         progress: (value) => {
           uploadProgress.value = value;
         },
@@ -201,7 +198,7 @@ export function FirmwarePage() {
               selectedFile.value &&
               html`
                 <div class="file-selected">
-                  <div class="file-name">${selectedFile.value.name}</div>
+                  <div class="file-name">${selectedFile.value.file.name}</div>
                   <div class="file-info">${fileStatus()}</div>
                 </div>
               `
