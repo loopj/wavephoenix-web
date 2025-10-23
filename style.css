@@ -1,0 +1,299 @@
+html {
+  height: 100%;
+}
+
+body {
+  background: #121212;
+  color: #fff;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-image: url("images/background.gif");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body::before,
+body::after {
+  content: "";
+  flex-grow: 1;
+}
+
+a {
+  color: #dddddd;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* Helper classes */
+.hidden {
+  display: none !important;
+}
+
+/* Buttons */
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.75em 1.5em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: inline-block;
+  text-align: center;
+  min-width: 0;
+  font-weight: bold;
+}
+
+button.primary {
+  background: #8e287b;
+  color: #fff;
+}
+
+button.primary:hover {
+  background: color-mix(in srgb, #8e287b 90%, white 10%);
+}
+
+button.secondary {
+  background: #e9d5ff;
+  color: #8e287b;
+}
+
+button.secondary:hover {
+  background: color-mix(in srgb, #e9d5ff 70%, white 30%);
+}
+
+button.outline {
+  background: none;
+  color: #f3e8ff;
+  border: 1px solid #f3e8ff66;
+  text-decoration: none;
+}
+
+button.outline:hover {
+  background: #e9d5ff22;
+}
+
+button.loading {
+  position: relative;
+  color: transparent !important;
+}
+
+button.loading::before {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -10px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Header and Footer */
+.header-bar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  z-index: 1000;
+}
+
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+/* Cards */
+.card {
+  position: relative;
+  width: 500px;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 15px;
+  box-sizing: border-box;
+}
+
+.card p {
+  margin: 15px 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .card {
+    width: 90vw;
+  }
+}
+
+.card-title {
+  font-weight: bold;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 25px 0 20px;
+}
+
+.card-title.not-supported {
+  color: #f44336;
+}
+
+.card-title.not-connected {
+  color: #ff9800;
+}
+
+.card-title.connected {
+  color: #4caf50;
+}
+
+.card-body {
+  margin: 15px;
+  box-sizing: border-box;
+}
+
+.card-actions {
+  display: flex;
+  gap: 15px;
+  margin: 15px;
+}
+
+.card-actions button {
+  flex: 1 1 0;
+  margin-top: 0;
+}
+
+/* File target */
+.file-target {
+  position: relative;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-target.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.upload-icon {
+  width: 80px;
+  display: block;
+  margin: 10px auto;
+}
+
+.file-selected {
+  border-radius: 8px;
+  padding: 8px;
+  margin: 10px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.file-name {
+  text-align: center;
+  font-family: monospace;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.file-info {
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+/* Progress bars */
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #00000044;
+}
+
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(to right, #4caf50, #66bb6a);
+}
+
+.progress-bar-text {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  text-align: center;
+  line-height: 30px;
+  font-size: 14px;
+  color: white;
+  pointer-events: none;
+}
+
+/* TODO: Make more generic */
+button.menu-item {
+  display: block;
+  width: 100%;
+  margin: 0.5em 0;
+}
+
+.button-menu button {
+  display: block;
+  width: 100%;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 15px 0;
+  border-bottom: 1px solid #5b5b5b;
+  color: #ccc;
+  font-size: 17px;
+  flex: 1;
+  text-align: left;
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
