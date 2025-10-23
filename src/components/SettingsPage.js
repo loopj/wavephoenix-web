@@ -2,7 +2,7 @@ import { useSignal } from '@preact/signals';
 import { html } from 'htm/preact';
 import { useEffect } from 'preact/hooks';
 
-import { connection } from '@/connection.js';
+import { connection, useDisconnectHandler } from '@/connection.js';
 import { showPage } from '@/nav.js';
 
 const WIRELESS_CHANNELS = Object.fromEntries(
@@ -50,6 +50,10 @@ export function SettingsPage() {
         .map((i) => String(i));
     })();
   }, []);
+
+  useDisconnectHandler(() => {
+    showPage('connect');
+  });
 
   function backButtonClick() {
     showPage('menu');

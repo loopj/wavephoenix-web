@@ -208,8 +208,8 @@ export function MigrationPage() {
   function UploadProgress() {
     return html`
       <p>
-        Firmware update in progress. Do not disconnect or power off your device until the update is
-        complete.
+        Bootloader migration in progress. Do not disconnect or power off your device until the
+        update is complete.
       </p>
 
       <div class="progress-bar">
