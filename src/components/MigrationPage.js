@@ -12,10 +12,13 @@ import { FileSelector } from './FileSelector.js';
 
 // WavePhoenix bootloader versions by SHA-256
 const BOOTLOADER_VERSIONS = {
-  c437629cead63edd638937485fdc3770f5e888c0e366900da992f48902e1f466: {
-    major: 0,
-    minor: 10,
-    patch: 0,
+  '839b035dcddddd422848df8c116622b57f961061a53388e68ecee49fbff15597': {
+    version: {
+      major: 0,
+      minor: 10,
+      patch: 0,
+    },
+    board: 'minireceiver',
   },
 };
 
@@ -120,7 +123,11 @@ export function MigrationPage() {
     const btlSHABytes = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
     const btlSHA = sha256BytesToString(btlSHABytes);
 
-    selectedBtlFile.value = { file, type: 'bootloader', version: BOOTLOADER_VERSIONS[btlSHA] };
+    selectedBtlFile.value = {
+      file,
+      type: 'bootloader',
+      version: BOOTLOADER_VERSIONS[btlSHA].version,
+    };
   }
 
   async function onBtlFileRejected(file, error) {
