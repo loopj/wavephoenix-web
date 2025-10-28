@@ -11,21 +11,42 @@ body {
   background-image: url("images/background.gif");
   background-size: cover;
   background-position: center;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
 }
 
-body::before,
-body::after {
-  content: "";
-  flex-grow: 1;
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 a {
   color: #dddddd;
   font-weight: bold;
   text-decoration: none;
+}
+
+.header-bar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  z-index: 1000;
+}
+
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 14px;
 }
 
 /* Helper classes */

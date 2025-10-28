@@ -26,4 +26,4 @@ function App() {
   return html`<div>Unknown page</div>`;
 }
 
-render(html`<${App} />`, document.body);
+render(html`<${App} />`, document.getElementById('app'));
